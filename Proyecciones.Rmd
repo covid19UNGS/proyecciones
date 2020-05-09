@@ -1,0 +1,159 @@
+---
+title: "Proyecciones y estimaciones de tiempo de duplicación"
+author: Grupo covid19UNGS
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: 
+  html_document:
+    theme: readable
+    toc: yes
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
+bibliography: Epidemics.bib
+---
+
+```{r setup, include=FALSE,echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+require(lubridate)
+require(tidyverse)
+
+csv_fname <- "https://raw.githubusercontent.com/lsaravia/covid19ar/master/coronavirus_ar.csv"
+
+cor <- read_csv(csv_fname) %>% dplyr::select(fecha:TDFdia)
+cor <- cor  %>% mutate(fecha=ymd(fecha), dias =as.numeric( fecha - min(fecha))) 
+cor <- cor %>% mutate(importadosdia=importados-lag(importados))
+cor$importadosdia[1] <- 1
+cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(CABAdia),0,CABAdia))
+
+
+```
+
+## Estimaciones usando modelos log-lineales
+
+La fase inicial de un brote, cuando se muestra en un gráfico de semi-log (el eje y con una transformación logarítmica), aparece (algo) lineal. Esto sugiere que podemos modelar el crecimiento y decaimiento epidémico, utilizando un modelo log-lineal simple de la forma:
+
+$$log(y) = rt + b$$
+
+donde $y$ es la incidencia, $r$ es la tasa de crecimiento, $t$ es el número de días desde un punto específico en el tiempo (generalmente el inicio del brote) y $b$ es la ordenada de origen. Se ajustan modelos separados para distintas fases de la curva de epidemia (datos de incidencia).
+
+* Dividimos la curva de incidencia en dos partes, antes y despues del primer pico de incidencia que sucedió despues de la cuarentena (20/03/2020), que resultó el 30/03/2020. Tomamos esta fecha para determinar el $R_0$ antes de la cuarentena 
+
+
+### Estimamos con los casos locales (no importados) para toda Argentina 
+
+```{r log-linearlocal, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
+require(incidence)
+require(projections)
+
+cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
+
+
+cor_incidence <- cor  %>% dplyr::select(fecha, localesdia) %>% uncount(localesdia)
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha)
+
+#cor_incidence_peak <- find_peak(cor_incidence_obj)
+
+cor_incidence_fit <- incidence::fit(cor_incidence_obj, 
+    split = cor_incidence_peak)
+
+
+# plot the incidence data and the model fit
+plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) + 
+    labs(title = "Incidencia Observada y modelada para casos **locales** COVID-19", 
+        subtitle = "Argentina, 2020 by @larysar") + theme_bw()  + geom_vline(xintercept = cor_incidence_peak,col = "red", lty = 2) 
+
+
+```
+
+
+* La tasa de crecimiento antes del pico **`r cor_incidence_peak`** fue **`r format(incidence::get_info(cor_incidence_fit, "r")[1],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,1],digits=2,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,2],digits=2,nsmall=2)`)
+
+* La tasa de crecimiento después el pico fue **`r format(incidence::get_info(cor_incidence_fit, "r")[2],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[2,2],digits=3,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[2,1],digits=3,nsmall=2)`).
+
+* El tiempo de duplicacion de la primer parte es es **`r format(incidence::get_info(cor_incidence_fit, "doubling")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,2],digits=1,nsmall=1)` días)
+
+* El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
+
+
+## Proyecciones
+
+* Esta estimacion de proyecciones requiere la estimación del R0 para la fase creciente y decreciente, basado en [@Nouvellet2018]. Cuando tomamos los casos locales, si dividimos en dos fases por el pico de incidencia la segunda fase no es decreciente.  En este caso yo tomé el primer pico, luego se observó un pico secundario en 
+
+* Utiliza datos sobre la incidencia diaria, _el intervalo de serial_ (tiempo entre el inicio de los infectores y los infectados) y el número de reproducción, para simular trayectorias de epidemia plausibles y proyectar la incidencia futura. Se basa en un proceso de ramificación donde la incidencia diaria sigue un proceso de Poisson determinado por una infecciosidad diaria, calculada como:
+
+$$\lambda_t \sim Pois \left ( \sum_{s=1}^{t-1} y_s w(t-s) \right ) $$ 
+
+donde $w()$ es la funcion de masa de probabilidad del intervalo serial, y $y_s$ es la incidencia en el tiempo $s$.
+
+```{r proyectR0, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
+require(epitrix)
+require(distcrete)
+mu <- 7.5 # days
+mu <- 5.8 # days
+
+sigma <- 3.4 # days
+param <- gamma_mucv2shapescale(mu, sigma / mu)
+w <- distcrete("gamma", interval = 1,
+                 shape = param$shape,
+                 scale = param$scale, w = 0)
+growth_R0 <- lm2R0_sample(cor_incidence_fit$before$model, w)
+
+hist(growth_R0, col = "grey", border = "white", main = "Distribution of R0")
+summary(growth_R0)
+
+decay_R0 <- lm2R0_sample(cor_incidence_fit$after$model, w)
+hist(decay_R0, col = "grey", border = "white", main = "Distribution of R0")
+summary(decay_R0)
+
+```
+
+### Predicciones para Argentina
+
+```{r proyect, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
+
+set.seed(1)
+pred_fwd_days <- 10
+date_range <- 1:(which(get_dates(cor_incidence_obj) == cor_incidence_peak) - pred_fwd_days)
+test_pred_growth <- project(cor_incidence_obj[date_range],
+                            R = median(growth_R0),
+                            si = w,
+                            n_days = pred_fwd_days, n_sim = 1000)
+
+# 
+#
+set.seed(1)
+pred_fwd_days <- 10 # 5
+date_range <- which(get_dates(cor_incidence_obj) == cor_incidence_peak):(length(get_dates(cor_incidence_obj)) - pred_fwd_days)
+test_pred_decay <- project(cor_incidence_obj[date_range],
+                            R = median(decay_R0),
+                            si = w,
+                            n_days = 30, n_sim = 1000)
+
+plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) %>% add_projections(test_pred_decay, boxplots = FALSE) 
+
+```
+
+### Predicciones para Tierra Del Fuego
+
+
+```{r proyectTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
+
+cor_incidence <- cor  %>% dplyr::select(fecha, TDFdia) %>% uncount(TDFdia)
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=today())
+
+cor_incidence_peak <- find_peak(cor_incidence_obj)
+# cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
+
+cor_incidence_fit <- incidence::fit(cor_incidence_obj, 
+    split = cor_incidence_peak)
+
+
+# plot the incidence data and the model fit
+plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) + 
+    labs(title = "Incidencia Observada y modelada para Tierra del Fuego COVID-19", 
+        subtitle = "Argentina, 2020 by @larysar") + theme_bw()  + geom_vline(xintercept = cor_incidence_peak,col = "red", lty = 2) 
+
+```
+
+
+## Bibliografía
