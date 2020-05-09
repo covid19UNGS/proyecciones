@@ -155,5 +155,14 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 ```
 
+* La tasa de crecimiento antes del pico **`r cor_incidence_peak`** fue **`r format(incidence::get_info(cor_incidence_fit, "r")[1],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,1],digits=2,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,2],digits=2,nsmall=2)`)
+
+* La tasa de crecimiento después el pico fue **`r format(incidence::get_info(cor_incidence_fit, "r")[2],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[2,2],digits=3,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[2,1],digits=3,nsmall=2)`).
+
+* El tiempo de duplicación de la primer parte es es **`r format(incidence::get_info(cor_incidence_fit,"doubling")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,2],digits=1,nsmall=1)` días)
+
+* El tiempo de disminución a la mitad de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "halving")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[2],digits=1,nsmall=1)` días). 
+
+
 
 ## Bibliografía
