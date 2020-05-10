@@ -17,7 +17,9 @@ knitr::opts_chunk$set(echo = FALSE)
 require(lubridate)
 require(tidyverse)
 
-csv_fname <- "https://raw.githubusercontent.com/lsaravia/covid19ar/master/coronavirus_ar.csv"
+#csv_fname <- "https://raw.githubusercontent.com/lsaravia/covid19ar/master/coronavirus_ar.csv"
+csv_fname <- "Data/coronavirus_ar.csv"
+
 
 cor <- read_csv(csv_fname) %>% dplyr::select(fecha:TDFdia)
 cor <- cor  %>% mutate(fecha=ymd(fecha), dias =as.numeric( fecha - min(fecha))) 
@@ -27,6 +29,75 @@ cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(
 
 
 ```
+
+
+# Estimación de cambios en el número reproductivo efectivo $R_t$
+
+
+El valor de $R_t$ representa el número esperado de casos secundarios que surgen de un caso primario infectado en el momento $t$. Este valor cambia a lo largo de un brote. Si el valor de $R_t$ permanece por debajo de uno, el brote se extinguirá. Sin embargo, cuando $R_t$ es mayor que uno, es probable que se produzca un brote sostenido. El objetivo de las intervenciones de control es típicamente reducir el número de reproducción por debajo de uno [@Thompson2019].
+
+Método de estimación aplicado [@Cori2013; @Thompson2019] permite la inclusión de los casos importados y que se puede estimar el intervalo serial a partir de seguimiento de casos y también incluir variablidad en la distribucion del intervalo serial cuando se asume una distribución gamma discreta.  
+
+
+* Un parametro importante es el 'Serial interval' (SI). El SI es el tiempo entre el inicio de los síntomas de cada caso de la enfermedad en cuestión, y el inicio de los síntomas en cualquier caso secundario que resulte de la transmisión de los casos primarios. En otras palabras, es el tiempo entre casos en la cadena (de ramificación) de transmisión de la enfermedad. El SI es, de hecho, una distribución estadística de tiempos de intervalo en serie, en lugar de un valor fijo. Esa distribución se puede simular, generalmente utilizando una distribución gamma discreta con una media y desviación estándar dada.
+
+* Se utilizó un 'Serial interval' (SI) estimado por @Li2020 basado en 16 casos es de 7.5 días, con una SD=3.4, pero se permitió que la media del SI variara entre 2.3 y 8.4 usando una distribución normal truncada con una SD de 2.0, y tambien variamos la SD de la SD que variara entre 0.5 y 4.0 
+
+* El intervalo serial posteriormente estimado por @He2020 (77 casos) con una media de 5.8 está dentro de los parametros simulados
+
+```{r Refectivo, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache=TRUE,cache.extra = tools::md5sum(csv_fname)}
+source("R/functions.r")
+
+require(EpiEstim)
+
+incid <- cor %>% dplyr::select(localesdia,importadosdia,fecha) %>% rename(local=localesdia,imported=importadosdia,dates=fecha)
+ar_res_parametric_si <- estimate_R(incid, 
+                                   method = "uncertain_si", 
+                                   config = make_config(list(mean_si = 7.5, std_mean_si = 2, 
+                                                             min_mean_si = 1, max_mean_si = 8.4, 
+                                                             std_si = 3.4, std_std_si = 1, 
+                                                             min_std_si = 0.5, max_std_si = 4, n1 = 1000, n2 = 1000))
+)
+
+
+plot(ar_res_parametric_si, "incid", add_imported_cases=TRUE, ) + labs(title = "Casos por dia Importados y Locales", 
+        subtitle = " COVID-19, Argentina, 2020 by @larysar") + theme_bw()
+
+plot(ar_res_parametric_si, "SI")+ theme_bw()
+
+plot(ar_res_parametric_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efectivo Basado en 7 días", 
+        subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw()
+
+```
+
+* Si usamos los datos de @He2020 (77 casos) para estimar el intervalo serial (SI media de 5.8), hay 
+que eliminar el par con ID=9 porque el infector y el infectado suceden el mismo día.
+
+```{r RefectivoSI_He, results=FALSE,echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache=TRUE,cache.extra = tools::md5sum(csv_fname)}
+
+pair <- read_tsv("Data/pair_data_He2020.dat") %>% mutate( EL=dmy(EL),ER=dmy(ER),SL=dmy(SL)) %>% mutate(SL=as.integer(SL-EL),SR=as.integer(SL+1),EL=as.integer(0),ER=as.integer(1)) %>% select(-ID) %>% filter(SL-EL>0)
+
+## fixing the random seeds
+MCMC_seed <- 1
+overall_seed <- 2
+mcmc_control <- make_mcmc_control(seed = MCMC_seed, burnin = 1000)
+dist <- "G"  # fitting a Gamma distribution for the SI
+empirical_si_config <- make_config(list(si_parametric_distr = dist, 
+    mcmc_control = mcmc_control, seed = overall_seed, n1 = 50, 
+    n2 = 50))
+ar_res_empirical_si <- estimate_R(incid, method = "si_from_data", 
+    si_data = pair, config = empirical_si_config)
+
+plot(ar_res_empirical_si, "SI")+ theme_bw()
+
+plot(ar_res_empirical_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efectivo Basado en 7 días", 
+        subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw()
+
+mu <- lapply(ar_res_empirical_si$SI.Moments,mean)
+sigma <- mu$Std
+mu <- mu$Mean
+```
+
 
 ## Estimaciones usando modelos log-lineales
 
@@ -75,7 +146,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 * El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
 
 
-## Proyecciones
+## Proyecciones para total de casos Argentina
 
 * Esta estimacion de proyecciones requiere la estimación del R0 para la fase creciente y decreciente, basado en [@Nouvellet2018]. Cuando tomamos los casos locales, si dividimos en dos fases por el pico de incidencia la segunda fase no es decreciente.  En este caso yo tomé el primer pico, luego se observó un pico secundario en 
 
@@ -88,10 +159,10 @@ donde $w()$ es la funcion de masa de probabilidad del intervalo serial, y $y_s$ 
 ```{r proyectR0, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 require(epitrix)
 require(distcrete)
-mu <- 7.5 # days
-mu <- 5.8 # days
-
-sigma <- 3.4 # days
+# Serial interval estimated by Li2020
+#mu <- 7.5 # days
+#sigma <- 3.4 # days
+#
 param <- gamma_mucv2shapescale(mu, sigma / mu)
 w <- distcrete("gamma", interval = 1,
                  shape = param$shape,
@@ -106,8 +177,6 @@ hist(decay_R0, col = "grey", border = "white", main = "Distribution of R0")
 summary(decay_R0)
 
 ```
-
-### Predicciones para Argentina
 
 ```{r proyect, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 
@@ -133,10 +202,12 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ```
 
-### Predicciones para Tierra Del Fuego
+### Estimacion de $R_t$ y tiempo de duplicación para Tierra Del Fuego
 
+```{r Rt-log-linearTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
-```{r proyectTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
+dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=TDFdia)
+esProv <- estima_Re_from_df(dfCABA,"Tierra del Fuego",end_date = today())
 
 cor_incidence <- cor  %>% dplyr::select(fecha, TDFdia) %>% uncount(TDFdia)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=today())
@@ -163,6 +234,55 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 * El tiempo de disminución a la mitad de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "halving")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[2],digits=1,nsmall=1)` días). 
 
+### Proyecciones para Tierra Del Fuego
+
+
+```{r proyectR0TDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
+require(epitrix)
+require(distcrete)
+# Serial interval estimated by Li2020
+#mu <- 7.5 # days
+#sigma <- 3.4 # days
+#
+param <- gamma_mucv2shapescale(mu, sigma / mu)
+w <- distcrete("gamma", interval = 1,
+                 shape = param$shape,
+                 scale = param$scale, w = 0)
+growth_R0 <- lm2R0_sample(cor_incidence_fit$before$model, w)
+
+hist(growth_R0, col = "grey", border = "white", main = "Distribution of R0")
+summary(growth_R0)
+
+decay_R0 <- lm2R0_sample(cor_incidence_fit$after$model, w)
+hist(decay_R0, col = "grey", border = "white", main = "Distribution of R0")
+summary(decay_R0)
+
+```
+
+
+```{r proyectTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
+
+set.seed(1)
+pred_fwd_days <- 10
+date_range <- 1:(which(get_dates(cor_incidence_obj) == cor_incidence_peak) - pred_fwd_days)
+test_pred_growth <- project(cor_incidence_obj[date_range],
+                            R = median(growth_R0),
+                            si = w,
+                            n_days = pred_fwd_days, n_sim = 1000)
+
+# 
+#
+set.seed(1)
+pred_fwd_days <- 10 # 5
+date_range <- which(get_dates(cor_incidence_obj) == cor_incidence_peak):(length(get_dates(cor_incidence_obj)) - pred_fwd_days)
+test_pred_decay <- project(cor_incidence_obj[date_range],
+                            R = median(decay_R0),
+                            si = w,
+                            n_days = 30, n_sim = 1000)
+
+plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) %>% add_projections(test_pred_decay, boxplots = FALSE) 
+
+```
 
 
 ## Bibliografía
