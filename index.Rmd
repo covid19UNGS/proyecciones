@@ -105,10 +105,12 @@ plot(ar_res_empirical_si, "SI")+ theme_bw()
 plot(ar_res_empirical_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efectivo Basado en 7 días", 
         subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw()
 
-mu <- lapply(ar_res_empirical_si$SI.Moments,mean)
+mu <- lapply(ar_res_empirical_si$SI.Moments,median)
 sigma <- mu$Std
 mu <- mu$Mean
 ```
+
+La mediana del intervalo serial estimado es **mu =`r mu`** y la desviación **sigma =`r sigma`** 
 
 
 ## Estimaciones usando modelos log-lineales
