@@ -55,7 +55,7 @@ Método de estimación aplicado [@Cori2013; @Thompson2019] permite la inclusión
 
 * Se utilizó un 'Serial interval' (SI) estimado por @Li2020 basado en 16 casos es de 7.5 días, con una SD=3.4, pero se permitió que la media del SI variara entre 2.3 y 8.4 usando una distribución normal truncada con una SD de 2.0, y tambien variamos la SD de la SD que variara entre 0.5 y 4.0 
 
-* El intervalo serial posteriormente estimado por @He2020 (77 casos) con una media de 5.8 está dentro de los parametros simulados
+* Luego se estimó el intervalo serial basandose en los datos de @He2020 (77 casos), con una media estimada en su paper de 5.8 días, aunque esta dentro de los parámetros del punto anterior estos datos serían más realistas.
 
 ```{r Refectivo, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache=TRUE,cache.extra = tools::md5sum(csv_fname)}
 source("R/functions.r")
@@ -82,7 +82,7 @@ plot(ar_res_parametric_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efe
 
 ```
 
-* Si usamos los datos de @He2020 (77 casos) para estimar el intervalo serial (SI media de 5.8), hay 
+* Usamos los datos de @He2020 (77 casos) para estimar el intervalo serial (SI media de 5.8) y el $R_t$, hay 
 que eliminar el par con ID=9 porque el infector y el infectado suceden el mismo día.
 
 ```{r RefectivoSI_He, results=FALSE,echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache=TRUE,cache.extra = tools::md5sum(csv_fname)}
@@ -110,7 +110,7 @@ sigma <- mu$Std
 mu <- mu$Mean
 ```
 
-La mediana del intervalo serial estimado es **mu =`r mu`** y la desviación **sigma =`r sigma`** 
+La mediana del intervalo serial estimado es **mu =`r mu`** y la desviación **sigma =`r sigma`**, lo cual es diferente de lo reportado en el paper de @He2020 seguramente debido a que se usaron diferentes métodos. De ahora en adelante usamos el intervalo serial estimado por nosotros.
 
 
 ## Estimaciones usando modelos log-lineales
@@ -162,13 +162,13 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 ## Proyecciones para total de casos Argentina
 
-* Esta estimacion de proyecciones requiere la estimación del R0 para la fase creciente y decreciente, basado en [@Nouvellet2018]. Cuando tomamos los casos locales, si dividimos en dos fases por el pico de incidencia la segunda fase no es decreciente.  En este caso yo tomé el primer pico, luego se observó un pico secundario en 
+* Esta estimación de proyecciones requiere la estimación del R0 para las distintas fases (creciente y decreciente?), basado en [@Nouvellet2018]. Tomamos los casos locales, en dos fases por el primer pico de incidencia después de la cuarentena.  
 
 * Utiliza datos sobre la incidencia diaria, _el intervalo de serial_ (tiempo entre el inicio de los infectores y los infectados) y el número de reproducción, para simular trayectorias de epidemia plausibles y proyectar la incidencia futura. Se basa en un proceso de ramificación donde la incidencia diaria sigue un proceso de Poisson determinado por una infecciosidad diaria, calculada como:
 
 $$\lambda_t \sim Pois \left ( \sum_{s=1}^{t-1} y_s w(t-s) \right ) $$ 
 
-donde $w()$ es la funcion de masa de probabilidad del intervalo serial, y $y_s$ es la incidencia en el tiempo $s$.
+donde $w()$ es la función de masa de probabilidad del intervalo serial, y $y_s$ es la incidencia en el tiempo $s$.
 
 ```{r proyectR0, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 require(epitrix)
@@ -218,7 +218,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ## Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA
 
-* La linea punteada roja vertical es el primer pico de casos despues de la cuarentena que tomo para dividir 1ra fase, habria que agregar distintas fases de la cuarentena y evaluar el grado de movilidad. 
+* La linea punteada roja vertical es el primer pico de casos despues de la cuarentena, que tomo para dividir 1ra fase, habría que agregar distintas fases de la cuarentena y evaluar el grado de movilidad. 
 
 ```{r Rt-log-linearCABA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
@@ -248,7 +248,8 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 * El tiempo de duplicación de la primer parte es es **`r format(incidence::get_info(cor_incidence_fit,"doubling")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,2],digits=1,nsmall=1)` días)
 
-* El tiempo de disminución a la mitad de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "halving")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[2],digits=1,nsmall=1)` días). 
+* El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
+
 
 ### Proyecciones para CABA
 
@@ -300,7 +301,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 ```
 
 
-## Estimacion de $R_t$ y tiempo de duplicación para Tierra Del Fuego
+## Estimación de $R_t$ y tiempo de duplicación para Tierra Del Fuego
 
 * La linea punteada roja vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Tambien habría que comparar con datos de movilidad. 
 
