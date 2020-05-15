@@ -52,13 +52,17 @@ estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL){
   }
   
   cor_quarantine <- ymd("2020-03-20")
+  fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10")),
+                  nombre=c("Cuarentena","Fase 2","Fase 3","Fase 4"))
   cor_incidence_real_peak <- ifelse(inherits(cor_incidence_obj,"incidence"), incidence::find_peak(cor_incidence_obj),cor_quarantine)
   
   print(
     plot(obj_res_parametric_si, "incid" ) + labs(title = paste(region,"Casos por dia Importados y Locales"), 
                                     subtitle = " COVID-19, Argentina, 2020 by @larysar") + theme_bw() +
-                                    geom_vline(xintercept = cor_quarantine, col = "red", lty = 2)  +
-                                    geom_vline(xintercept = cor_incidence_real_peak, col = "brown", lty = 2)
+                                    geom_vline(xintercept = cor_incidence_real_peak, col = "brown", lty = 2) +
+                                    geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 2)  +
+                                    geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0) 
+      
   )
   
   # print(plot(obj_res_parametric_si, "SI")+ theme_bw())
