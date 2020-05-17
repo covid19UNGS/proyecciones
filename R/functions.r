@@ -1,7 +1,7 @@
 
 #' Use EpiEstim to estimate the Efective reproductive Number by week 
 #'
-#' @param df data.frame with the incidence data to convert to an incidence object
+#' @param df data.frame with the incidence data to convert to an incidence object, or incidence object
 #' @param region name of the region to plot
 #' @param pair_data data to estimate the serial interval
 #' @param end_date final time of the data set
@@ -11,25 +11,32 @@
 #'
 #' @examples
 estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL){ 
-  if(!inherits(df, "data.frame")) stop("Parameter df must be a data.frame")
   require(EpiEstim)
   require(lubridate)
-  if(any(names(df)=="nue_casosconf_diff")) {
-    
-    cor_incidence <- df  %>% dplyr::select(nue_casosconf_diff,fecha) %>% uncount(nue_casosconf_diff)
-    if(class(cor_incidence$fecha)!="Date") {
-      cor_incidence_obj <- incidence::incidence(dmy(cor_incidence$fecha),last_date=end_date)
-    } else {
-      cor_incidence_obj <- incidence::incidence(cor_incidence$fecha,last_date=end_date)
-    }
+  if(inherits(df, "data.frame")) { 
+    if(any(names(df)=="nue_casosconf_diff")) {
       
-  } else if(any(names(df)=="localesdia")) { 
+      cor_incidence <- df  %>% dplyr::select(nue_casosconf_diff,fecha) %>% uncount(nue_casosconf_diff)
+      if(class(cor_incidence$fecha)!="Date") {
+        cor_incidence_obj <- incidence::incidence(dmy(cor_incidence$fecha),last_date=end_date)
+      } else {
+        cor_incidence_obj <- incidence::incidence(cor_incidence$fecha,last_date=end_date)
+      }
+        
+    } else if(any(names(df)=="localesdia")) { 
+      
+      cor_incidence_obj <- df %>% dplyr::select(localesdia,importadosdia,fecha) %>% rename(local=localesdia,imported=importadosdia,dates=fecha)
+      
+    }
+  } else if(inherits(df, "incidence")) {
     
-    cor_incidence_obj <- df %>% dplyr::select(localesdia,importadosdia,fecha) %>% rename(local=localesdia,imported=importadosdia,dates=fecha)
-    
-  }
+    cor_incidence_obj <- df
+  
+  } else stop("Parameter df must be a data.frame")
+
+
   if(is.null(pair_data)){
-  obj_res_parametric_si <- estimate_R(cor_incidence_obj, 
+    obj_res_parametric_si <- estimate_R(cor_incidence_obj, 
                                      method = "uncertain_si", 
                                      config = make_config(list(mean_si = 7.5, std_mean_si = 2, 
                                                                min_mean_si = 1, max_mean_si = 8.4, 
@@ -57,7 +64,7 @@ estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL){
   cor_incidence_real_peak <- ifelse(inherits(cor_incidence_obj,"incidence"), incidence::find_peak(cor_incidence_obj),cor_quarantine)
   
   print(
-    plot(obj_res_parametric_si, "incid" ) + labs(title = paste(region,"Casos por dia Importados y Locales"), 
+    plot(obj_res_parametric_si, "incid" ) + labs(title = paste(region,"Casos por dia"), 
                                     subtitle = " COVID-19, Argentina, 2020 by @larysar") + theme_bw() +
                                     geom_vline(xintercept = cor_incidence_real_peak, col = "brown", lty = 2) +
                                     geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 2)  +
@@ -70,7 +77,8 @@ estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL){
   print(
     plot(obj_res_parametric_si, "R")+ theme_bw() + labs(title = paste(region,"Nro Reproductivo Efectivo Basado en 7 días"), 
                                                        subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw() +  
-                                      geom_vline(xintercept = cor_quarantine, col = "red", lty = 2) +
+                                      geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 2)  +
+                                      geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0) +
                                       geom_vline(xintercept = cor_incidence_real_peak, col = "brown", lty = 2) +
                                       scale_y_continuous(trans="log2")
     )

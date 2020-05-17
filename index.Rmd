@@ -28,6 +28,7 @@ lapply(needed_packages, function(x) { if(!require(x,character.only = TRUE)) inst
 
 require(lubridate)
 require(tidyverse)
+theme_set(theme_bw())
 
 #csv_fname <- "https://raw.githubusercontent.com/lsaravia/covid19ar/master/coronavirus_ar.csv"
 csv_fname <- "Data/coronavirus_ar.csv"
@@ -39,12 +40,17 @@ cor <- cor %>% mutate(importadosdia=importados-lag(importados))
 cor$importadosdia[1] <- 1
 cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(CABAdia),0,CABAdia))
 
+# Datos de Casos de Gobierno Nacional 
+#
+csv_fname <- "Data/Covid19Casos.csv"
+cor_nac <- read_csv(csv_fname)
 
 ```
 
 
 # Estimación de cambios en el número reproductivo efectivo $R_t$
 
+* Datos a partir de los reportes del Ministerio de Salud
 
 El valor de $R_t$ representa el número esperado de casos secundarios que surgen de un caso primario infectado en el momento $t$. Este valor cambia a lo largo de un brote. Si el valor de $R_t$ permanece por debajo de uno, el brote se extinguirá. Sin embargo, cuando $R_t$ es mayor que uno, es probable que se produzca un brote sostenido. El objetivo de las intervenciones de control es típicamente reducir el número de reproducción por debajo de uno [@Thompson2019].
 
@@ -218,17 +224,47 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ## Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA
 
-* La linea punteada roja vertical es el primer pico de casos despues de la cuarentena, que tomo para dividir 1ra fase, habría que agregar distintas fases de la cuarentena y evaluar el grado de movilidad. 
+
+* La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. Tambien habría que comparar con datos de movilidad. 
+
+* Datos a partir de los reportes del Ministerio de Salud
 
 ```{r Rt-log-linearCABA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=CABAdia)
+#dfCABA %>% filter(fecha<"2020-05-15") %>% summarize(totcasos=sum(nue_casosconf_diff))
 esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = today())
 
-cor_incidence <- cor  %>% dplyr::select(fecha, CABAdia) %>% uncount(CABAdia)
-cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=today())
+```
+
+* Datos a partir de "Datos abiertos del ministerio de salud", la diferencia esta en la posibilidad de determinar la fecha del inicio de los sintomas y si es caso importado o local. 
+
+http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/c9ce10a1-0cac-4ed7-9486-7d437cf2cea1
+
+
+```{r Rt-log-linearCABA_NAC, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+
+# Datos de Casos de Gobierno Nacional 
+#
+corConf <- cor_nac %>% filter(provincia_residencia=="CABA",clasificacion_resumen=="Confirmado") %>%
+      mutate(fecha=ymd(fecha_fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
+      mutate(group=if_else(importado,"imported","local"))
+
+cor_incidence_obj <- corConf  %>% select(group,fecha)
+cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
+                                          last_date=max(cor_nac$ultima_actualizacion))
+
+esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados/Sintomas")
+
+
+
+# cor_incidence <- cor  %>% dplyr::select(fecha, CABAdia) %>% uncount(CABAdia)
+# cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=today())
+cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha)
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor_nac$ultima_actualizacion))
 
 #cor_incidence_peak <- find_peak(cor_incidence_obj)
+#cor_incidence_peak <- estimate_peak(cor_incidence_obj)
 cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
 
 cor_incidence_fit <- incidence::fit(cor_incidence_obj, 
@@ -240,7 +276,14 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
     labs(title = "Incidencia Observada y modelada para CABA COVID-19", 
         subtitle = "Argentina, 2020 by @larysar") + theme_bw()  + geom_vline(xintercept = cor_incidence_peak,col = "red", lty = 2) 
 
+
+
+
 ```
+
+
+Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>% summarize(totcasos=n())`
+
 
 * La tasa de crecimiento antes del pico **`r cor_incidence_peak`** fue **`r format(incidence::get_info(cor_incidence_fit, "r")[1],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,1],digits=2,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,2],digits=2,nsmall=2)`)
 
@@ -303,16 +346,34 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ## Estimación de $R_t$ y tiempo de duplicación para Tierra Del Fuego
 
-* La linea punteada roja vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Tambien habría que comparar con datos de movilidad. 
+* Primero utilizamos los reportes del Ministerio de Salud. La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. Tambien habría que comparar con datos de movilidad. 
 
 ```{r Rt-log-linearTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=TDFdia)
 esProv <- estima_Re_from_df(dfCABA,"Tierra del Fuego",end_date = today())
+```
 
-cor_incidence <- cor  %>% dplyr::select(fecha, TDFdia) %>% uncount(TDFdia)
-cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=today())
+* Luego los "Datos abiertos del ministerio de salud"
 
+```{r Rt-log-linearTDF_NAC, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+
+# Datos de Casos de Gobierno Nacional 
+#
+corConf <- cor_nac %>% filter(provincia_residencia=="Tierra del Fuego",clasificacion_resumen=="Confirmado") %>%
+      mutate(fecha=ymd(fecha_fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
+      mutate(group=if_else(importado,"imported","local"))
+cor_incidence_obj <- corConf  %>% select(group,fecha)
+cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
+                                          last_date=max(cor_nac$ultima_actualizacion))
+
+esProv <- estima_Re_from_df(cor_incidence_obj,"TDF Locales/Importados/Sintomas")
+
+# Tomo casos totales para el ajuste exponencial
+#
+cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha) #cor  %>% dplyr::select(fecha, TDFdia) %>% uncount(TDFdia)
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor_nac$ultima_actualizacion))
+#cor_incidence_loc <- cor_incidence_obj[,"local"] 
 cor_incidence_peak <- find_peak(cor_incidence_obj)
 # cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
 
@@ -364,7 +425,7 @@ summary(decay_R0)
 ```{r proyectTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 
 set.seed(1)
-pred_fwd_days <- 10
+pred_fwd_days <- 5
 date_range <- 1:(which(get_dates(cor_incidence_obj) == cor_incidence_peak) - pred_fwd_days)
 test_pred_growth <- project(cor_incidence_obj[date_range],
                             R = median(growth_R0),
@@ -374,7 +435,7 @@ test_pred_growth <- project(cor_incidence_obj[date_range],
 # 
 #
 set.seed(1)
-pred_fwd_days <- 10 # 5
+pred_fwd_days <- 15 # 5
 date_range <- which(get_dates(cor_incidence_obj) == cor_incidence_peak):(length(get_dates(cor_incidence_obj)) - pred_fwd_days)
 test_pred_decay <- project(cor_incidence_obj[date_range],
                             R = median(decay_R0),
