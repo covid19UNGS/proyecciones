@@ -42,8 +42,8 @@ cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(
 
 # Datos de Casos de Gobierno Nacional 
 #
-csv_fname <- "Data/Covid19Casos.csv"
-cor_nac <- read_csv(csv_fname)
+csv_fname <- "Data/covid_19_casos.csv"
+cor_nac <- read_csv2(csv_fname)
 
 ```
 
@@ -88,8 +88,10 @@ plot(ar_res_parametric_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efe
 
 ```
 
+## Variación en el intervalo serial 
+
 * Usamos los datos de @He2020 (77 casos) para estimar el intervalo serial (SI media de 5.8) y el $R_t$, hay 
-que eliminar el par con ID=9 porque el infector y el infectado suceden el mismo día.
+que eliminar el par con ID=9 porque el infector y el infectado suceden el mismo día. Estos datos consisten en la fecha de inicio de los sintomas en casos primarios y la fecha de inicio de sintomas en casos secundarios (originados por los primarios)
 
 ```{r RefectivoSI_He, results=FALSE,echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache=TRUE,cache.extra = tools::md5sum(csv_fname)}
 
@@ -116,7 +118,7 @@ sigma <- mu$Std
 mu <- mu$Mean
 ```
 
-La mediana del intervalo serial estimado es **mu =`r mu`** y la desviación **sigma =`r sigma`**, lo cual es diferente de lo reportado en el paper de @He2020 seguramente debido a que se usaron diferentes métodos. De ahora en adelante usamos el intervalo serial estimado por nosotros.
+La mediana del intervalo serial estimado es **mu =`r mu`** y la desviación **sigma =`r sigma`**, lo cual es diferente de lo reportado en el paper de @He2020 seguramente debido a que se usaron diferentes métodos. De ahora en adelante usaremos el intervalo serial estimado por nosotros.
 
 
 ## Estimaciones usando modelos log-lineales
@@ -170,7 +172,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 * Esta estimación de proyecciones requiere la estimación del R0 para las distintas fases (creciente y decreciente?), basado en [@Nouvellet2018]. Tomamos los casos locales, en dos fases por el primer pico de incidencia después de la cuarentena.  
 
-* Utiliza datos sobre la incidencia diaria, _el intervalo de serial_ (tiempo entre el inicio de los infectores y los infectados) y el número de reproducción, para simular trayectorias de epidemia plausibles y proyectar la incidencia futura. Se basa en un proceso de ramificación donde la incidencia diaria sigue un proceso de Poisson determinado por una infecciosidad diaria, calculada como:
+* Utiliza datos sobre la incidencia diaria, _el intervalo de serial_ (tiempo entre el inicio de los infectores y los infectados) y el número de reproductivo, que se mantiene constante, para simular trayectorias de epidemia plausibles y proyectar la incidencia futura. Se basa en un proceso de ramificación donde la incidencia diaria sigue un proceso de Poisson determinado por una infecciosidad diaria, calculada como:
 
 $$\lambda_t \sim Pois \left ( \sum_{s=1}^{t-1} y_s w(t-s) \right ) $$ 
 
@@ -225,7 +227,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 ## Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA
 
 
-* La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. Tambien habría que comparar con datos de movilidad. 
+* La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. También habría que comparar con datos de movilidad. 
 
 * Datos a partir de los reportes del Ministerio de Salud
 
@@ -237,7 +239,8 @@ esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = today())
 
 ```
 
-* Datos a partir de "Datos abiertos del ministerio de salud", la diferencia esta en la posibilidad de determinar la fecha del inicio de los sintomas y si es caso importado o local. 
+
+* Datos a partir de "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los sintomas y si es caso importado o local. En el set de datos liberado el 15/05/2020 se incluia la información del departamento que en el caso de CABA era la comuna, en el 2do set de datos liberado el 20/05/2020 ya no inlcuye el departamento. 
 
 http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/c9ce10a1-0cac-4ed7-9486-7d437cf2cea1
 
@@ -246,13 +249,14 @@ http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-arg
 
 # Datos de Casos de Gobierno Nacional 
 #
+
 corConf <- cor_nac %>% filter(provincia_residencia=="CABA",clasificacion_resumen=="Confirmado") %>%
-      mutate(fecha=ymd(fecha_fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
+      mutate(fecha=if_else(is.na(fis),fecha_apertura,fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
       mutate(group=if_else(importado,"imported","local"))
 
 cor_incidence_obj <- corConf  %>% select(group,fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
-                                          last_date=max(cor_nac$ultima_actualizacion))
+                                          last_date=ymd('2020/05/19'))
 
 esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados/Sintomas")
 
@@ -360,12 +364,13 @@ esProv <- estima_Re_from_df(dfCABA,"Tierra del Fuego",end_date = today())
 
 # Datos de Casos de Gobierno Nacional 
 #
+
 corConf <- cor_nac %>% filter(provincia_residencia=="Tierra del Fuego",clasificacion_resumen=="Confirmado") %>%
-      mutate(fecha=ymd(fecha_fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
+      mutate(fecha=if_else(is.na(fis),fecha_apertura,fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
       mutate(group=if_else(importado,"imported","local"))
 cor_incidence_obj <- corConf  %>% select(group,fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
-                                          last_date=max(cor_nac$ultima_actualizacion))
+                                          last_date=ymd('2020/05/19'))
 
 esProv <- estima_Re_from_df(cor_incidence_obj,"TDF Locales/Importados/Sintomas")
 
