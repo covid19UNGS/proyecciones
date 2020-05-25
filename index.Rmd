@@ -91,7 +91,7 @@ plot(ar_res_parametric_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efe
 ## Variación en el intervalo serial 
 
 * Usamos los datos de @He2020 (77 casos) para estimar el intervalo serial (SI media de 5.8) y el $R_t$, hay 
-que eliminar el par con ID=9 porque el infector y el infectado suceden el mismo día. Estos datos consisten en la fecha de inicio de los sintomas en casos primarios y la fecha de inicio de sintomas en casos secundarios (originados por los primarios)
+que eliminar el par con ID=9 porque el infector y el infectado suceden el mismo día. Estos datos consisten en la fecha de inicio de los síntomas en casos primarios y la fecha de inicio de síntomas en casos secundarios (originados por los primarios)
 
 ```{r RefectivoSI_He, results=FALSE,echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache=TRUE,cache.extra = tools::md5sum(csv_fname)}
 
@@ -240,7 +240,7 @@ esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = today())
 ```
 
 
-* Datos a partir de "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los sintomas y si es caso importado o local. En el set de datos liberado el 15/05/2020 se incluia la información del departamento que en el caso de CABA era la comuna, en el 2do set de datos liberado el 20/05/2020 ya no inlcuye el departamento. 
+* Datos a partir de "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los síntomas y si es caso importado o local. En el set de datos liberado el 15/05/2020 se incluia la información del departamento que en el caso de CABA era la comuna, en el 2do set de datos liberado el 20/05/2020 ya no inlcuye el departamento. 
 
 http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/c9ce10a1-0cac-4ed7-9486-7d437cf2cea1
 
@@ -258,7 +258,7 @@ cor_incidence_obj <- corConf  %>% select(group,fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
                                           last_date=ymd('2020/05/19'))
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados/Sintomas")
+esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados Fecha Síntomas")
 
 
 
@@ -372,7 +372,7 @@ cor_incidence_obj <- corConf  %>% select(group,fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
                                           last_date=ymd('2020/05/19'))
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"TDF Locales/Importados/Sintomas")
+esProv <- estima_Re_from_df(cor_incidence_obj,"TDF Locales/Importados Fecha Síntomas")
 
 # Tomo casos totales para el ajuste exponencial
 #
