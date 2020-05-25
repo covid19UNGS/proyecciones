@@ -265,7 +265,7 @@ esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados/Sintomas"
 # cor_incidence <- cor  %>% dplyr::select(fecha, CABAdia) %>% uncount(CABAdia)
 # cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=today())
 cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha)
-cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor_nac$ultima_actualizacion))
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=ymd('2020/05/19'))
 
 #cor_incidence_peak <- find_peak(cor_incidence_obj)
 #cor_incidence_peak <- estimate_peak(cor_incidence_obj)
@@ -377,7 +377,7 @@ esProv <- estima_Re_from_df(cor_incidence_obj,"TDF Locales/Importados/Sintomas")
 # Tomo casos totales para el ajuste exponencial
 #
 cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha) #cor  %>% dplyr::select(fecha, TDFdia) %>% uncount(TDFdia)
-cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor_nac$ultima_actualizacion))
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=ymd('2020/05/19'))
 #cor_incidence_loc <- cor_incidence_obj[,"local"] 
 cor_incidence_peak <- find_peak(cor_incidence_obj)
 # cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
