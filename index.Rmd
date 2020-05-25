@@ -29,6 +29,7 @@ lapply(needed_packages, function(x) { if(!require(x,character.only = TRUE)) inst
 require(lubridate)
 require(tidyverse)
 theme_set(theme_bw())
+source("R/functions.r")
 
 #csv_fname <- "https://raw.githubusercontent.com/lsaravia/covid19ar/master/coronavirus_ar.csv"
 csv_fname <- "Data/coronavirus_ar.csv"
@@ -64,7 +65,6 @@ Método de estimación aplicado [@Cori2013; @Thompson2019] permite la inclusión
 * Luego se estimó el intervalo serial basandose en los datos de @He2020 (77 casos), con una media estimada en su paper de 5.8 días, aunque esta dentro de los parámetros del punto anterior estos datos serían más realistas.
 
 ```{r Refectivo, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache=TRUE,cache.extra = tools::md5sum(csv_fname)}
-source("R/functions.r")
 
 require(EpiEstim)
 
