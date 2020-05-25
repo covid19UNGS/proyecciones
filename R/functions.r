@@ -10,7 +10,8 @@
 #' @export
 #'
 #' @examples
-estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL){ 
+estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL,
+                              nombre_fases=c("Cuarentena","Fase 2","Fase 3","Fase 4")){ 
   require(EpiEstim)
   require(lubridate)
   if(inherits(df, "data.frame")) { 
@@ -60,7 +61,7 @@ estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL){
   
   cor_quarantine <- ymd("2020-03-20")
   fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10")),
-                  nombre=c("Cuarentena","Fase 2","Fase 3","Fase 4"))
+                  nombre=nombre_fases)
   cor_incidence_real_peak <- ifelse(inherits(cor_incidence_obj,"incidence"), incidence::find_peak(cor_incidence_obj),cor_quarantine)
   
   print(

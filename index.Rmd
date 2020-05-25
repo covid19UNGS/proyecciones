@@ -235,7 +235,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=CABAdia)
 #dfCABA %>% filter(fecha<"2020-05-15") %>% summarize(totcasos=sum(nue_casosconf_diff))
-esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = today())
+esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = today(),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3"))
 
 ```
 
@@ -258,7 +258,7 @@ cor_incidence_obj <- corConf  %>% select(group,fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
                                           last_date=ymd('2020/05/19'))
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados Fecha Síntomas")
+esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados Fecha Síntomas",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3"))
 
 
 
