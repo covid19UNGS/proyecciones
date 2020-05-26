@@ -237,10 +237,43 @@ dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=CABAdia)
 #dfCABA %>% filter(fecha<"2020-05-15") %>% summarize(totcasos=sum(nue_casosconf_diff))
 esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = today(),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3"))
 
+cor_incidence <- cor  %>% dplyr::select(fecha, CABAdia) %>% uncount(CABAdia)
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=today())
+
+#cor_incidence_peak <- find_peak(cor_incidence_obj)
+#cor_incidence_peak <- estimate_peak(cor_incidence_obj)
+cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
+
+cor_incidence_fit <- incidence::fit(cor_incidence_obj, 
+    split = cor_incidence_peak)
+
+
+# plot the incidence data and the model fit
+plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) + 
+    labs(title = "Incidencia Observada y modelada para CABA COVID-19", 
+        subtitle = "Argentina, 2020 by @larysar") + theme_bw()  + geom_vline(xintercept = cor_incidence_peak,col = "red", lty = 2) 
+
+
+
+
 ```
 
 
-* Datos a partir de "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los síntomas y si es caso importado o local. En el set de datos liberado el 15/05/2020 se incluia la información del departamento que en el caso de CABA era la comuna, en el 2do set de datos liberado el 20/05/2020 ya no inlcuye el departamento. 
+Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>% summarize(totcasos=n())`
+
+
+* La tasa de crecimiento antes del pico **`r cor_incidence_peak`** fue **`r format(incidence::get_info(cor_incidence_fit, "r")[1],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,1],digits=2,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,2],digits=2,nsmall=2)`)
+
+* La tasa de crecimiento después el pico fue **`r format(incidence::get_info(cor_incidence_fit, "r")[2],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[2,2],digits=3,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[2,1],digits=3,nsmall=2)`).
+
+* El tiempo de duplicación de la primer parte es es **`r format(incidence::get_info(cor_incidence_fit,"doubling")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[1,2],digits=1,nsmall=1)` días)
+
+* El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
+
+### Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA a partir de Datos Abiertos
+
+
+* Si tomamos los "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los síntomas y si es caso importado o local. En el set de datos liberado el 15/05/2020 se incluia la información del departamento que en el caso de CABA era la comuna, en el 2do set de datos liberado el 20/05/2020 ya no inlcuye el departamento. 
 
 http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/c9ce10a1-0cac-4ed7-9486-7d437cf2cea1
 
@@ -450,6 +483,5 @@ test_pred_decay <- project(cor_incidence_obj[date_range],
 plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) %>% add_projections(test_pred_decay, boxplots = FALSE) 
 
 ```
-
 
 ## Bibliografía
