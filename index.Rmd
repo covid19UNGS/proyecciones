@@ -84,7 +84,16 @@ plot(ar_res_parametric_si, "incid", add_imported_cases=TRUE, ) + labs(title = "C
 plot(ar_res_parametric_si, "SI")+ theme_bw()
 
 plot(ar_res_parametric_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efectivo Basado en 7 días", 
-        subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw()
+        subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw() 
+
+reff_df <- tibble(fecha=ar_res_parametric_si$dates[min(ar_res_parametric_si$R$t_end):length(ar_res_parametric_si$dates)],R=ar_res_parametric_si$R$`Mean(R)`) %>% inner_join(cor) %>% mutate(terapiaDia=terapia - lag(terapia))
+
+ggplot(cor,aes(fecha,terapia,color=log(terapia))) + geom_point() + scale_colour_distiller(palette="YlOrRd", guide = FALSE,direction= 1) + ylab("terapia intensiva") +  labs(title = " Casos COVID-19, Argentina, 2020 by @larysar")
+
+ggplot(reff_df,aes(terapia,R,color=log(terapia))) + geom_point() + scale_colour_distiller(palette="YlOrRd", guide = FALSE,direction= 1) +   labs(title = " Casos COVID-19, Argentina, 2020 by @larysar")
+
+ggplot(reff_df,aes(fecha,terapiaDia,color=log(terapia))) + geom_point() + scale_colour_distiller(palette="YlOrRd", guide = FALSE,direction= 1) + ylab("terapia intensiva variación diaria") +  labs(title = " Casos COVID-19, Argentina, 2020 by @larysar")
+
 
 ```
 
