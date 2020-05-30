@@ -7,6 +7,7 @@ output:
     theme: readable
     toc: yes
     toc_depth: 2
+    toc_float: true
 editor_options: 
   chunk_output_type: console
 bibliography: Epidemics.bib
