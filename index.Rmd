@@ -263,11 +263,11 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 
 
+# Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>% summarize(totcasos=n())`
 
 ```
 
 
-Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>% summarize(totcasos=n())`
 
 
 * La tasa de crecimiento antes del pico **`r cor_incidence_peak`** fue **`r format(incidence::get_info(cor_incidence_fit, "r")[1],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,1],digits=2,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,2],digits=2,nsmall=2)`)
@@ -325,7 +325,7 @@ date_range <- which(get_dates(cor_incidence_obj) == cor_incidence_peak):(length(
 test_pred_decay <- project(cor_incidence_obj[date_range],
                             R = median(decay_R0),
                             si = w,
-                            n_days = 60, n_sim = 1000)
+                            n_days = 30, n_sim = 1000)
 
 plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) %>% add_projections(test_pred_decay, boxplots = FALSE) 
 
