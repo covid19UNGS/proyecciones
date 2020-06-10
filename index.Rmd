@@ -252,11 +252,10 @@ Habiendo hecho todos los calculos anteriores tenemos que aclarar que los anális
 cor<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA/export?format=csv&id=16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA&gid=0') %>% mutate(fecha=dmy(fecha))
 
 dfCABA <- cor %>% filter( osm_admin_level_4 =="CABA") 
-dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=CABAdia)
 #dfCABA %>% filter(fecha<"2020-05-15") %>% summarize(totcasos=sum(nue_casosconf_diff))
 esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"))
 
-cor_incidence <- cor  %>% dplyr::select(fecha, CABAdia) %>% uncount(CABAdia)
+cor_incidence <- dfCABA  %>% dplyr::select(fecha, nue_casosconf_diff) %>% uncount(nue_casosconf_diff)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
 
 #cor_incidence_peak <- find_peak(cor_incidence_obj)
@@ -272,14 +271,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
     labs(title = "Incidencia Observada y modelada para CABA COVID-19", 
         subtitle = "Argentina, 2020 by @larysar") + theme_bw()  + geom_vline(xintercept = cor_incidence_peak,col = "red", lty = 2) 
 
-
-
-
-
 ```
-
-
-
 
 * La tasa de crecimiento antes del pico **`r cor_incidence_peak`** fue **`r format(incidence::get_info(cor_incidence_fit, "r")[1],digits=2,nsmall=2)`** (95% CI `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,1],digits=2,nsmall=2)` - `r format(incidence::get_info(cor_incidence_fit, "r.conf")[1,2],digits=2,nsmall=2)`)
 
