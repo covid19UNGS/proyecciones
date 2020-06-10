@@ -44,9 +44,19 @@ cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(
 
 # Datos de Casos de Gobierno Nacional 
 #
-
 csv_fname1 <- "Data/Covid19Casos.csv"
-#cor_nac <- read_csv(csv_fname1,locale = locale(encoding = "ISO-8859-1"))
+
+url <- "https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.csv"
+download.file(url, destfile = csv_fname1)
+
+#x_utf16 <- readBin(csv_fname1, "raw", n = file.size(csv_fname1))
+#
+#x_utf8 <- iconv(list(x_utf16), from = "UTF-16LE", to = "UTF-8", toRaw = TRUE)[[1]]
+#
+#cor_nac <- read_csv(x_utf8)
+#
+#rm(x_utf16,x_utf8)
+
 cor_nac <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859-1",skipNul = TRUE)
 
 ```
@@ -236,7 +246,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ## El $R_0$ y la heterogeneidad de la epidemia
 
-Habiendo hecho todos los calculos anteriores tenemos que aclarar que los análisis basados en el $R_0$ (el número de reproducción básico, el número esperado de casos secundarios producida por un caso primario durante su período infeccioso en una población completamente susceptible [@Kermack1927]) tienen una serie de susposiciones que no se cumplen [@Hebert-Dufresne2020].Esto se puede razonar de la siguiente forma, el $R_0$ nos dice el número de infecciones producidas por un caso pero ese numero promedio tiene una gran variación [@Lloyd-Smith2005]. Hay situaciones en las que se producen los eventos de super-propagación que están relacionadas con individuos que tienen mayor carga viral, o mayores contactos, o situaciones en las que se propicia la transmición (encuentros de muchas personas sin distancimiento ni protección). Es decir, puede ser engañoso mirar promedios provinciales o nacionales y celebrar si $R_0$ parece estar cayendo por debajo de 1 porque la epidemia podría estar causando estragos en lugares deteminados o entre grupos particulares. Digamos que ncluso si R0 está por debajo de 1 se pueden producir brotes grandes debido a la super-propagación o simplemente por casualidad. 
+Habiendo hecho todos los calculos anteriores tenemos que aclarar que los análisis basados en el $R_0$ (el número de reproducción básico, el número esperado de casos secundarios producida por un caso primario durante su período infeccioso en una población completamente susceptible [@Kermack1927]) tienen una serie de susposiciones que no se cumplen [@Hebert-Dufresne2020].Esto se puede razonar de la siguiente forma, el $R_0$ nos dice el número de infecciones producidas por un caso pero ese numero promedio tiene una gran variación [@Lloyd-Smith2005]. Hay situaciones en las que se producen los eventos de super-propagación que están relacionadas con individuos que tienen mayor carga viral, o mayores contactos, o situaciones en las que se propicia la transmición (encuentros de muchas personas sin distancimiento ni protección). Es decir, puede ser engañoso mirar promedios provinciales o nacionales y celebrar si $R_0$ parece estar cayendo por debajo de 1 porque la epidemia podría estar causando estragos en lugares deteminados o entre grupos particulares. Digamos que incluso si $R_0$ está por debajo de 1 se pueden producir brotes grandes debido a la super-propagación o simplemente por casualidad. 
 
 
 ## Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA
