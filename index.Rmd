@@ -44,8 +44,10 @@ cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(
 
 # Datos de Casos de Gobierno Nacional 
 #
-csv_fname1 <- "Data/covid_19_casos.csv"
-cor_nac <- read_csv2(csv_fname1)
+
+csv_fname1 <- "Data/Covid19Casos.csv"
+#cor_nac <- read_csv(csv_fname1,locale = locale(encoding = "ISO-8859-1"))
+cor_nac <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859-1",skipNul = TRUE)
 
 ```
 
@@ -128,7 +130,6 @@ mu <- mu$Mean
 
 La mediana del intervalo serial estimado es **mu =`r mu`** y la desviación **sigma =`r sigma`**, lo cual es diferente de lo reportado en el paper de @He2020 seguramente debido a que se usaron diferentes métodos. De ahora en adelante usaremos el intervalo serial estimado por nosotros.
 
-
 ## Estimaciones usando modelos log-lineales
 
 La fase inicial de un brote, cuando se muestra en un gráfico de semi-log (el eje y con una transformación logarítmica), aparece (algo) lineal. Esto sugiere que podemos modelar el crecimiento y decaimiento epidémico, utilizando un modelo log-lineal simple de la forma:
@@ -178,9 +179,9 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 ## Proyecciones para total de casos Argentina
 
-* Esta estimación de proyecciones requiere la estimación del R0 para las distintas fases (creciente y decreciente?), basado en [@Nouvellet2018]. Tomamos los casos locales, en dos fases por el primer pico de incidencia después de la cuarentena.  
+* Esta estimación de proyecciones requiere la estimación del R0 para las dos fases que definimos (con division en el primer pico después de la cuarentena), basado en [@Nouvellet2018]. Tomamos solamente los casos locales.  
 
-* Utiliza datos sobre la incidencia diaria, _el intervalo de serial_ (tiempo entre el inicio de los infectores y los infectados) y el número de reproductivo, que se mantiene constante, para simular trayectorias de epidemia plausibles y proyectar la incidencia futura. Se basa en un proceso de ramificación donde la incidencia diaria sigue un proceso de Poisson determinado por una infecciosidad diaria, calculada como:
+* Utilizamos los datos sobre la incidencia diaria, _el intervalo de serial_ (tiempo entre el inicio de los infectores y los infectados) y el número de reproductivo, que se mantiene constante, para simular trayectorias de epidemia plausibles y proyectar la incidencia futura. Se basa en un proceso de ramificación donde la incidencia diaria sigue un proceso de Poisson determinado por una infecciosidad diaria, calculada como:
 
 $$\lambda_t \sim Pois \left ( \sum_{s=1}^{t-1} y_s w(t-s) \right ) $$ 
 
@@ -232,18 +233,28 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ```
 
+
+## El $R_0$ y la heterogeneidad de la epidemia
+
+Habiendo hecho todos los calculos anteriores tenemos que aclarar que los análisis basados en el $R_0$ (el número de reproducción básico, el número esperado de casos secundarios producida por un caso primario durante su período infeccioso en una población completamente susceptible [@Kermack1927]) tienen una serie de susposiciones que no se cumplen [@Hebert-Dufresne2020].Esto se puede razonar de la siguiente forma, el $R_0$ nos dice el número de infecciones producidas por un caso pero ese numero promedio tiene una gran variación [@Lloyd-Smith2005]. Hay situaciones en las que se producen los eventos de super-propagación que están relacionadas con individuos que tienen mayor carga viral, o mayores contactos, o situaciones en las que se propicia la transmición (encuentros de muchas personas sin distancimiento ni protección). Es decir, puede ser engañoso mirar promedios provinciales o nacionales y celebrar si $R_0$ parece estar cayendo por debajo de 1 porque la epidemia podría estar causando estragos en lugares deteminados o entre grupos particulares. Digamos que ncluso si R0 está por debajo de 1 se pueden producir brotes grandes debido a la super-propagación o simplemente por casualidad. 
+
+
 ## Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA
 
 
-* La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. También habría que comparar con datos de movilidad. 
+* La linea punteada marron vertical es pico de casos local, luego las lineas punteadas rojas son las fases de la cuarentena del gobierno nacional <https://www.argentina.gob.ar/coronavirus/aislamiento/fases>, hasta el ASPO/DISPO <https://www.boletinoficial.gob.ar/detalleAviso/primera/230245/20200608>.
 
-* Datos a partir de los reportes del Ministerio de Salud
+
+* Datos a partir de los reportes del Ministerio de Salud 
 
 ```{r Rt-log-linearCABA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
+cor<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA/export?format=csv&id=16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA&gid=0') %>% mutate(fecha=dmy(fecha))
+
+dfCABA <- cor %>% filter( osm_admin_level_4 =="CABA") 
 dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=CABAdia)
 #dfCABA %>% filter(fecha<"2020-05-15") %>% summarize(totcasos=sum(nue_casosconf_diff))
-esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3"))
+esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"))
 
 cor_incidence <- cor  %>% dplyr::select(fecha, CABAdia) %>% uncount(CABAdia)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
@@ -263,7 +274,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 
 
-# Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>% summarize(totcasos=n())`
+
 
 ```
 
@@ -279,8 +290,6 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 * El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
 
 ### Proyecciones para CABA
-
-
 
 ```{r proyectR0CABA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 require(epitrix)
@@ -354,32 +363,31 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 ### Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA a partir de Datos Abiertos
 
 
-* Si tomamos los "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los síntomas y si es caso importado o local. En el set de datos liberado el 15/05/2020 se incluia la información del departamento que en el caso de CABA era la comuna, en el 2do set de datos liberado el 20/05/2020 ya no inlcuye el departamento. 
+* Si tomamos los "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los síntomas <http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/fd657d02-a33a-498b-a91b-2ef1a68b8d16>
 
-http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/c9ce10a1-0cac-4ed7-9486-7d437cf2cea1
-
+Enlace de descarga directo <https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.csv>
 
 ```{r Rt-log-linearCABA_NAC, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 # Datos de Casos de Gobierno Nacional 
 #
+# mutate(fecha=if_else(is.na(fis),fecha_apertura,fis))
+#
+corConf <- cor_nac %>% filter(residencia_provincia_nombre=="CABA",clasificacion_resumen=="Confirmado") %>% 
+      mutate(fecha=fecha_diagnostico)
 
-corConf <- cor_nac %>% filter(provincia_residencia=="CABA",clasificacion_resumen=="Confirmado") %>%
-      mutate(fecha=if_else(is.na(fis),fecha_apertura,fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
-      mutate(group=if_else(importado,"imported","local"))
+cor_incidence_obj <- corConf  %>% select(fecha)
+cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
+                                          last_date=ymd(max(corConf$ultima_actualizacion)))
 
-cor_incidence_obj <- corConf  %>% select(group,fecha)
-cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
-                                          last_date=ymd('2020/05/19'))
-
-esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Locales/Importados Fecha Síntomas",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3"))
+esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"))
 
 
 
 # cor_incidence <- cor  %>% dplyr::select(fecha, CABAdia) %>% uncount(CABAdia)
 # cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
-cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha)
-cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=ymd('2020/05/19'))
+# cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha)
+# cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=ymd('2020/05/19'))
 
 #cor_incidence_peak <- find_peak(cor_incidence_obj)
 #cor_incidence_peak <- estimate_peak(cor_incidence_obj)
@@ -420,7 +428,7 @@ Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>%
 
 ```{r Rt-log-linearTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
-dfCABA <- cor %>% dplyr::rename(nue_casosconf_diff=TDFdia)
+dfCABA <- cor %>% filter( osm_admin_level_4 =="Tierra del Fuego", is.na(osm_admin_level_8) | osm_admin_level_8!="Malvinas") 
 esProv <- estima_Re_from_df(dfCABA,"Tierra del Fuego",end_date = max(cor$fecha))
 ```
 
@@ -443,7 +451,7 @@ esProv <- estima_Re_from_df(dfCABA,"Tierra del Fuego",end_date = max(cor$fecha))
 # Tomo casos totales para el ajuste exponencial
 # Para Datos ABiertos
 # cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha) 
-cor_incidence <- cor  %>% dplyr::select(fecha, TDFdia) %>% uncount(TDFdia)
+cor_incidence <- dfCABA  %>% dplyr::select(fecha, nue_casosconf_diff) %>% uncount(nue_casosconf_diff)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
 #cor_incidence_loc <- cor_incidence_obj[,"local"] 
 cor_incidence_peak <- find_peak(cor_incidence_obj)
