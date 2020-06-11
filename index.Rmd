@@ -362,7 +362,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 
 
-### Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA a partir de Datos Abiertos
+## Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA a partir de Datos Abiertos
 
 
 * Si tomamos los "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los síntomas <http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/fd657d02-a33a-498b-a91b-2ef1a68b8d16>
@@ -380,7 +380,7 @@ corConf <- cor_nac %>% filter(residencia_provincia_nombre=="CABA",clasificacion_
 
 cor_incidence_obj <- corConf  %>% select(fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
-                                          last_date=ymd(max(corConf$ultima_actualizacion)))
+                                          last_date=ymd(max(corConf$ultima_actualizacion))-1)
 
 esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"))
 
@@ -426,7 +426,7 @@ Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>%
 
 ## Estimación de $R_t$ y tiempo de duplicación para Tierra Del Fuego
 
-* Primero utilizamos los reportes del Ministerio de Salud. La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. Tambien habría que comparar con datos de movilidad. 
+* Primero utilizamos los reportes del Ministerio de Salud. La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. 
 
 ```{r Rt-log-linearTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
