@@ -441,8 +441,8 @@ esProv <- estima_Re_from_df(dfCABA,"Buenos Aires",end_date = max(cor$fecha),nomb
 # cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha) 
 cor_incidence <- dfCABA  %>% dplyr::select(fecha, nue_casosconf_diff) %>% uncount(nue_casosconf_diff)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
-cor_incidence_peak <- find_peak(cor_incidence_obj)
-# cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
+#cor_incidence_peak <- find_peak(cor_incidence_obj)
+cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
 
 cor_incidence_fit <- incidence::fit(cor_incidence_obj, 
     split = cor_incidence_peak)
@@ -464,7 +464,6 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 * El tiempo de disminución a la mitad de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "halving")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[2],digits=1,nsmall=1)` días). 
 
 ### Proyecciones para Prov. De Buenos Aires
-
 
 ```{r proyectR0PBA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 require(epitrix)
@@ -515,7 +514,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ## Estimación de $R_t$ y tiempo de duplicación para Tierra Del Fuego
 
-* Primero utilizamos los reportes del Ministerio de Salud. La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. 
+* Utilizamos los reportes del Ministerio de Salud. La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. 
 
 ```{r Rt-log-linearTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
@@ -527,21 +526,6 @@ esProv <- estima_Re_from_df(dfCABA,"Tierra del Fuego",end_date = max(cor$fecha))
 
 ```{r Rt-log-linearTDF_NAC, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
-# Datos de Casos de Gobierno Nacional 
-# Luego los "Datos abiertos del ministerio de salud"
-# 
-# corConf <- cor_nac %>% filter(provincia_residencia=="Tierra del Fuego",clasificacion_resumen=="Confirmado") %>%
-#       mutate(fecha=if_else(is.na(fis),fecha_apertura,fis),importado=grepl("VIAJE", antecedente_epidemiologico)) %>%
-#       mutate(group=if_else(importado,"imported","local"))
-# cor_incidence_obj <- corConf  %>% select(group,fecha)
-# cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,groups=cor_incidence_obj$group,
-#                                           last_date=ymd('2020/05/19'))
-# 
-# esProv <- estima_Re_from_df(cor_incidence_obj,"TDF Locales/Importados Fecha Síntomas")
-
-# Tomo casos totales para el ajuste exponencial
-# Para Datos ABiertos
-# cor_incidence <- corConf  %>% filter(!importado) %>% select(fecha) 
 cor_incidence <- dfCABA  %>% dplyr::select(fecha, nue_casosconf_diff) %>% uncount(nue_casosconf_diff)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
 #cor_incidence_loc <- cor_incidence_obj[,"local"] 
@@ -568,7 +552,6 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 * El tiempo de disminución a la mitad de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "halving")[1],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "halving.conf")[2],digits=1,nsmall=1)` días). 
 
 ### Proyecciones para Tierra Del Fuego
-
 
 ```{r proyectR0TDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 require(epitrix)

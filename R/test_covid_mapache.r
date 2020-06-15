@@ -16,7 +16,7 @@ unique(cor$osm_admin_level_4)
 
 corConf <- cor %>% filter( osm_admin_level_4 =="Córdoba") %>% mutate(fecha=dmy(fecha)) %>% select(nue_casosconf_diff,fecha,transmision_tipo)
 
-estima_Re_from_df(corConf,"Prov. Córdoba",end_date=today())
+prov <- estima_Re_from_df(corConf,"Prov. Córdoba",end_date=today())
 
 
 corConf <- cor %>% filter( osm_admin_level_4 =="Tierra del Fuego", osm_admin_level_8!="Malvinas" | is.na(osm_admin_level_8)) %>% mutate(fecha=dmy(fecha)) %>% select(nue_casosconf_diff,fecha,transmision_tipo,osm_admin_level_8)
