@@ -519,9 +519,9 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 ```{r Rt-log-linearTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
-unique(cor_nac$carga_provincia_nombre)
+
 corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% 
-      mutate(fecha=fecha_diagnostico) %>% filter(carga_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro")) %>%
+      mutate(fecha=fecha_diagnostico) %>% filter(carga_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut")) %>%
       group_by(carga_provincia_nombre ) %>% 
       do( {
           cor_incidence_obj <- select(. , fecha)
@@ -534,6 +534,8 @@ corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>%
           rdf <- bind_cols(rdf, fecha = fechas[rdf$t_end]) 
       })
 
+saveRDS(corR,"Data/corR.rds")
+#corR <- readRDS("Data/corR.rds")
 
 nombre_fases <- c("Cuarentena","Fase 2","Fase 3","Fase 4","ASPO/DISPO")
 fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08")),
@@ -542,7 +544,7 @@ ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile02
   scale_y_continuous(trans="log2") + geom_hline(yintercept = 1, linetype=3) + 
   scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + 
   facet_wrap(~carga_provincia_nombre) + geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
-  geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0,size=3) + ylab("R effectivo (7 Días)") + xlab("")
+  geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0,size=3) + ylab("R effectivo (7 Días)") + xlab("") + coord_cartesian(ylim=c(0.1,8))
 
 ```
  
