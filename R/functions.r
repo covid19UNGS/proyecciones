@@ -11,7 +11,8 @@
 #'
 #' @examples
 estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL,
-                              nombre_fases=c("Cuarentena","Fase 2","Fase 3","Fase 4","DISPO")){ 
+                              nombre_fases=c("Cuarentena","Fase 2","Fase 3","Fase 4","DISPO"),
+                              plot=TRUE){ 
   require(EpiEstim)
   require(lubridate)
   if(inherits(df, "data.frame")) { 
@@ -63,26 +64,29 @@ estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL,
   fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08")),
                   nombre=nombre_fases)
   cor_incidence_real_peak <- ifelse(inherits(cor_incidence_obj,"incidence"), incidence::find_peak(cor_incidence_obj),cor_quarantine)
-  
-  print(
-    plot(obj_res_parametric_si, "incid" ) + labs(title = paste(region,"Casos por dia"), 
-                                    subtitle = " COVID-19, Argentina, 2020 by @larysar") + theme_bw() +
-                                    geom_vline(xintercept = cor_incidence_real_peak, col = "brown", lty = 2) +
-                                    geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
-                                    geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0) 
-      
-  )
-  
-  # print(plot(obj_res_parametric_si, "SI")+ theme_bw())
-  
-  print(
-    plot(obj_res_parametric_si, "R")+ theme_bw() + labs(title = paste(region,"Nro Reproductivo Efectivo Basado en 7 días"), 
-                                                       subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw() +  
-                                      geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
-                                      geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0) +
+  #
+  # plots
+  #
+  if( plot) {
+    print(
+      plot(obj_res_parametric_si, "incid" ) + labs(title = paste(region,"Casos por dia"), 
+                                      subtitle = " COVID-19, Argentina, 2020 by @larysar") + theme_bw() +
                                       geom_vline(xintercept = cor_incidence_real_peak, col = "brown", lty = 2) +
-                                      scale_y_continuous(trans="log2")
+                                      geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
+                                      geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0) 
+        
     )
-
+    
+    # print(plot(obj_res_parametric_si, "SI")+ theme_bw())
+    
+    print(
+      plot(obj_res_parametric_si, "R")+ theme_bw() + labs(title = paste(region,"Nro Reproductivo Efectivo Basado en 7 días"), 
+                                                         subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw() +  
+                                        geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
+                                        geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0) +
+                                        geom_vline(xintercept = cor_incidence_real_peak, col = "brown", lty = 2) +
+                                        scale_y_continuous(trans="log2")
+      )
+  }
   return(list(cor_incidence_obj,obj_res_parametric_si))
   }
