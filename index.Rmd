@@ -187,7 +187,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 * El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
 
 
-## Proyecciones para total de casos Argentina
+## Proyecciones de incidencia para total de casos Argentina
 
 * Esta estimación de proyecciones requiere la estimación del R0 para las dos fases que definimos (con division en el primer pico después de la cuarentena), basado en [@Nouvellet2018]. Tomamos solamente los casos locales.  
 
@@ -254,7 +254,6 @@ Habiendo hecho todos los calculos anteriores tenemos que aclarar que los anális
 
 * La linea punteada marron vertical es pico de casos local, luego las lineas punteadas rojas son las fases de la cuarentena del gobierno nacional <https://www.argentina.gob.ar/coronavirus/aislamiento/fases>, hasta el ASPO/DISPO <https://www.boletinoficial.gob.ar/detalleAviso/primera/230245/20200608>.
 
-
 * Datos a partir de los reportes del Ministerio de Salud 
 
 ```{r Rt-log-linearCABA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
@@ -291,7 +290,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 * El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
 
-### Proyecciones para CABA
+### Proyecciones de Incidencia para CABA
 
 ```{r proyectR0CABA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 require(epitrix)
@@ -365,9 +364,13 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 ## Estimación de $R_t$ y tiempo de duplicación para Ciudad de Buenos Aires CABA a partir de Datos Abiertos
 
 
-* Si tomamos los "Datos abiertos del ministerio de salud", la diferencia está en la posibilidad de determinar la fecha del inicio de los síntomas <http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/fd657d02-a33a-498b-a91b-2ef1a68b8d16>
+* Tomando los [Datos abiertos del ministerio de salud](http://datos.salud.gob.ar/dataset/covid-19-casos-registrados-en-la-republica-argentina/archivo/fd657d02-a33a-498b-a91b-2ef1a68b8d16) 
 
-Enlace de descarga directo <https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.csv>
+* Enlace de descarga directo <https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.csv>
+
+* Ulitima fecha de actualizacion `r  max(cor_nac$ultima_actualizacion)`
+
+* Los datos se actualizan por día a las 17:45, para los calculos de $R_t$ tomo el día anterior debido a que para el ultimo día no se contabilizan todos los casos. 
 
 ```{r Rt-log-linearCABA_NAC, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
@@ -464,7 +467,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 * El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
 
-### Proyecciones para Prov. De Buenos Aires
+### Calculo de Proyecciones de Incidencia para Prov. De Buenos Aires
 
 ```{r proyectR0PBA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE}
 require(epitrix)
@@ -517,12 +520,12 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 * Utilizamos los datos abiertos del Ministerio de Salud. Las lineas rojas son el inicio de la quarentena y las fases del gobierno nacional. 
 
-```{r Rt-log-linearTDF, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+```{r Rt-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 
 corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% 
-      mutate(fecha=fecha_diagnostico) %>% filter(carga_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut")) %>%
-      group_by(carga_provincia_nombre ) %>% 
+      mutate(fecha=fecha_diagnostico) %>% filter(residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut")) %>%
+      group_by(residencia_provincia_nombre ) %>% 
       do( {
           cor_incidence_obj <- select(. , fecha)
           cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
@@ -543,8 +546,31 @@ fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ym
 ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile025,ymax=quantile975),alpha=0.2) +
   scale_y_continuous(trans="log2") + geom_hline(yintercept = 1, linetype=3) + 
   scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + 
-  facet_wrap(~carga_provincia_nombre) + geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
+  facet_wrap(~residencia_provincia_nombre) + geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
   geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0,size=3) + ylab("R effectivo (7 Días)") + xlab("") + coord_cartesian(ylim=c(0.1,8))
+
+```
+
+
+## Comparacion de datos de Incidencia (nro de casos por día) por Provincia 
+
+* Inicialmente utilizamos los datos abiertos del Ministerio de Salud. Las lineas rojas son el inicio de la quarentena y las fases del gobierno nacional.
+* Los datos cargados a partir de los reportes del Ministerio de Salud, tienen diferencias con los "Datos abiertos del Ministerio de Salud" en este último caso utilizamos las fechas de diagnóstico y la provincia de residencia  
+
+```{r Rt-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+
+corI <- cor_nac %>% mutate(fecha=ymd(fecha_diagnostico)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut"),fecha < ultima_actualizacion) %>% group_by(residencia_provincia_nombre,fecha) %>% summarise( Casos = n()) %>% mutate(datos="Abiertos")
+
+ggplot(corI, aes(fecha,Casos)) + geom_bar(stat="identity") +  
+  scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + 
+  facet_wrap(~residencia_provincia_nombre, scales="free_y") + geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
+  geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0,size=3) + ylab("Casos") + xlab("") 
+
+corI1 <- cor %>% mutate(fecha=ymd(fecha)) %>% filter(osm_admin_level_4 %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut"),fecha <= max(corI$fecha)) %>% select(osm_admin_level_4,fecha,nue_casosconf_diff) %>% rename(Casos=nue_casosconf_diff,residencia_provincia_nombre=osm_admin_level_4) %>% mutate(datos="Reportes")
+corI <- bind_rows(corI,corI1)
+
+ggplot(corI, aes(fecha,Casos,colour=datos)) + geom_line() +   facet_wrap(~residencia_provincia_nombre, scales="free_y") + 
+  scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + ylab("Casos") + xlab("") + scale_color_viridis_d()
 
 ```
  
