@@ -368,7 +368,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 * Enlace de descarga directo <https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.csv>
 
-* Ulitima fecha de actualizacion `r  max(cor_nac$ultima_actualizacion)`
+* Última fecha de actualización `r  max(cor_nac$ultima_actualizacion)`
 
 * Los datos se actualizan por día a las 17:45, para los calculos de $R_t$ tomo el día anterior debido a que para el ultimo día no se contabilizan todos los casos. 
 
@@ -453,7 +453,7 @@ cor_incidence_fit <- incidence::fit(cor_incidence_obj,
 
 # plot the incidence data and the model fit
 plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) + 
-    labs(title = "Incidencia Observada y modelada para Tierra del Fuego COVID-19", 
+    labs(title = "Incidencia Observada y modelada para Prov. Buenos Aires COVID-19", 
         subtitle = "Argentina, 2020 by @larysar") + theme_bw()  + geom_vline(xintercept = cor_incidence_peak,col = "red", lty = 2) 
 
 ```
@@ -570,7 +570,7 @@ corI1 <- cor %>% mutate(fecha=ymd(fecha)) %>% filter(osm_admin_level_4 %in% c("C
 corI <- bind_rows(corI,corI1)
 
 ggplot(corI, aes(fecha,Casos,colour=datos)) + geom_line() +   facet_wrap(~residencia_provincia_nombre, scales="free_y") + 
-  scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + ylab("Casos") + xlab("") + scale_color_viridis_d()
+  scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + ylab("Casos") + xlab("") + scale_color_viridis_d() +  theme(legend.position="bottom") 
 
 ```
  
