@@ -557,7 +557,7 @@ ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile02
 * Inicialmente utilizamos los datos abiertos del Ministerio de Salud. Las lineas rojas son el inicio de la quarentena y las fases del gobierno nacional.
 * Los datos cargados a partir de los reportes del Ministerio de Salud, tienen diferencias con los "Datos abiertos del Ministerio de Salud" en este último caso utilizamos las fechas de diagnóstico y la provincia de residencia  
 
-```{r Rt-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+```{r Incid-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 corI <- cor_nac %>% mutate(fecha=ymd(fecha_diagnostico)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut"),fecha < ultima_actualizacion) %>% group_by(residencia_provincia_nombre,fecha) %>% summarise( Casos = n()) %>% mutate(datos="Abiertos")
 
