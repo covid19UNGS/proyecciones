@@ -405,85 +405,16 @@ div.tocify {
 </div>
 <div id="parametros-a-partir-de-datos-abiertos-por-provincia" class="section level2">
 <h2>Parametros a partir de Datos Abiertos por Provincia</h2>
-<pre><code>##  [1] &quot;ÿþid_evento_caso&quot;                 &quot;sexo&quot;                            
-##  [3] &quot;edad&quot;                             &quot;edad_años_meses&quot;                 
-##  [5] &quot;residencia_pais_nombre&quot;           &quot;residencia_provincia_nombre&quot;     
-##  [7] &quot;residencia_departamento_nombre&quot;   &quot;carga_provincia_nombre&quot;          
-##  [9] &quot;fecha_inicio_sintomas&quot;            &quot;fecha_apertura&quot;                  
-## [11] &quot;sepi_apertura&quot;                    &quot;fecha_internacion&quot;               
-## [13] &quot;cuidado_intensivo&quot;                &quot;fecha_cui_intensivo&quot;             
-## [15] &quot;fallecido&quot;                        &quot;fecha_fallecimiento&quot;             
-## [17] &quot;asistencia_respiratoria_mecanica&quot; &quot;carga_provincia_id&quot;              
-## [19] &quot;origen_financiamiento&quot;            &quot;Clasificacion&quot;                   
-## [21] &quot;clasificacion_resumen&quot;            &quot;residencia_provincia_id&quot;         
-## [23] &quot;fecha_diagnostico&quot;                &quot;residencia_departamento_id&quot;      
-## [25] &quot;ultima_actualizacion&quot;</code></pre>
+<ul>
+<li>Fallecidos sin fecha de hospitalización asumo que fueron hospitalizados.</li>
+<li>Calculo de días de hospitalización solamente para los fallecidos.</li>
+<li>Dias pre-hospitalización: desde inicio de síntomas hasta hospitalización.</li>
+</ul>
 <table>
-<caption>Tabla 1: Fallecidos sin fecha de hospitalización</caption>
+<caption>Tabla 1: Proporcion Fallecidos con respecto a hospitalizados</caption>
 <thead>
 <tr class="header">
-<th align="left">carga_provincia_nombre</th>
-<th align="right">edad</th>
-<th align="right">n</th>
-<th align="right">Porcentaje</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Buenos Aires</td>
-<td align="right">78</td>
-<td align="right">108</td>
-<td align="right">28</td>
-</tr>
-<tr class="even">
-<td align="left">CABA</td>
-<td align="right">80</td>
-<td align="right">53</td>
-<td align="right">13</td>
-</tr>
-<tr class="odd">
-<td align="left">Chaco</td>
-<td align="right">70</td>
-<td align="right">1</td>
-<td align="right">1</td>
-</tr>
-<tr class="even">
-<td align="left">Chubut</td>
-<td align="right">45</td>
-<td align="right">1</td>
-<td align="right">100</td>
-</tr>
-<tr class="odd">
-<td align="left">Córdoba</td>
-<td align="right">74</td>
-<td align="right">9</td>
-<td align="right">26</td>
-</tr>
-<tr class="even">
-<td align="left">La Rioja</td>
-<td align="right">86</td>
-<td align="right">3</td>
-<td align="right">38</td>
-</tr>
-<tr class="odd">
-<td align="left">Neuquén</td>
-<td align="right">60</td>
-<td align="right">1</td>
-<td align="right">14</td>
-</tr>
-<tr class="even">
-<td align="left">Río Negro</td>
-<td align="right">73</td>
-<td align="right">10</td>
-<td align="right">32</td>
-</tr>
-</tbody>
-</table>
-<table>
-<caption>Tabla 2: Proporcion Fallecidos con respecto a hospitalizados</caption>
-<thead>
-<tr class="header">
-<th align="left">carga_provincia_nombre</th>
+<th align="left">residencia_provincia_nombre</th>
 <th align="right">edad</th>
 <th align="left">dias_hospitalizacion</th>
 <th align="left">dias_pre_hospitalizacion</th>
@@ -495,17 +426,17 @@ div.tocify {
 <tr class="odd">
 <td align="left">Buenos Aires</td>
 <td align="right">73.0</td>
-<td align="left">8.0 days</td>
+<td align="left">7.0 days</td>
 <td align="left">2.0 days</td>
-<td align="right">383</td>
-<td align="right">13</td>
+<td align="right">433</td>
+<td align="right">10</td>
 </tr>
 <tr class="even">
 <td align="left">CABA</td>
-<td align="right">76.0</td>
+<td align="right">77.0</td>
 <td align="left">9.0 days</td>
 <td align="left">2.0 days</td>
-<td align="right">410</td>
+<td align="right">358</td>
 <td align="right">7</td>
 </tr>
 <tr class="odd">
@@ -517,14 +448,6 @@ div.tocify {
 <td align="right">38</td>
 </tr>
 <tr class="even">
-<td align="left">Chubut</td>
-<td align="right">45.0</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">1</td>
-<td align="right">25</td>
-</tr>
-<tr class="odd">
 <td align="left">Córdoba</td>
 <td align="right">78.0</td>
 <td align="left">14.5 days</td>
@@ -532,21 +455,13 @@ div.tocify {
 <td align="right">35</td>
 <td align="right">27</td>
 </tr>
-<tr class="even">
-<td align="left">Jujuy</td>
-<td align="right">52.0</td>
-<td align="left">16.0 days</td>
-<td align="left">6.0 days</td>
-<td align="right">1</td>
-<td align="right">100</td>
-</tr>
 <tr class="odd">
-<td align="left">La Rioja</td>
-<td align="right">79.0</td>
-<td align="left">8.0 days</td>
-<td align="left">3.0 days</td>
-<td align="right">8</td>
-<td align="right">57</td>
+<td align="left">Río Negro</td>
+<td align="right">70.5</td>
+<td align="left">7.0 days</td>
+<td align="left">2.0 days</td>
+<td align="right">32</td>
+<td align="right">9</td>
 </tr>
 <tr class="even">
 <td align="left">Mendoza</td>
@@ -557,6 +472,38 @@ div.tocify {
 <td align="right">8</td>
 </tr>
 <tr class="odd">
+<td align="left">La Rioja</td>
+<td align="right">79.0</td>
+<td align="left">8.0 days</td>
+<td align="left">3.0 days</td>
+<td align="right">8</td>
+<td align="right">57</td>
+</tr>
+<tr class="even">
+<td align="left">Neuquén</td>
+<td align="right">70.0</td>
+<td align="left">5.0 days</td>
+<td align="left">4.0 days</td>
+<td align="right">7</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Santa Fe</td>
+<td align="right">65.5</td>
+<td align="left">18.0 days</td>
+<td align="left">6.0 days</td>
+<td align="right">4</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Tucumán</td>
+<td align="right">63.5</td>
+<td align="left">9.0 days</td>
+<td align="left">2.5 days</td>
+<td align="right">4</td>
+<td align="right">31</td>
+</tr>
+<tr class="odd">
 <td align="left">Misiones</td>
 <td align="right">54.5</td>
 <td align="left">4.5 days</td>
@@ -565,44 +512,673 @@ div.tocify {
 <td align="right">7</td>
 </tr>
 <tr class="even">
-<td align="left">Neuquén</td>
-<td align="right">69.0</td>
-<td align="left">4.5 days</td>
-<td align="left">3.5 days</td>
-<td align="right">7</td>
+<td align="left">SIN ESPECIFICAR</td>
+<td align="right">68.0</td>
+<td align="left">6.5 days</td>
+<td align="left">3.0 days</td>
+<td align="right">2</td>
 <td align="right">3</td>
 </tr>
 <tr class="odd">
-<td align="left">Río Negro</td>
-<td align="right">72.0</td>
-<td align="left">7.0 days</td>
-<td align="left">2.0 days</td>
-<td align="right">31</td>
-<td align="right">9</td>
+<td align="left">Chubut</td>
+<td align="right">45.0</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">25</td>
 </tr>
 <tr class="even">
-<td align="left">Santa Fe</td>
-<td align="right">65.5</td>
-<td align="left">18.0 days</td>
+<td align="left">Jujuy</td>
+<td align="right">52.0</td>
+<td align="left">16.0 days</td>
 <td align="left">6.0 days</td>
-<td align="right">4</td>
-<td align="right">8</td>
-</tr>
-<tr class="odd">
-<td align="left">Tucumán</td>
-<td align="right">63.5</td>
-<td align="left">9.0 days</td>
-<td align="left">3.0 days</td>
-<td align="right">5</td>
-<td align="right">36</td>
+<td align="right">1</td>
+<td align="right">50</td>
 </tr>
 </tbody>
 </table>
 <table>
-<caption>Tabla 2: Proporcion Hospitalizados</caption>
+<caption>Tabla 3: De Hospitalizados cuantos Fallecen y fueron a Cuidado Intensivo, o no</caption>
 <thead>
 <tr class="header">
-<th align="left">carga_provincia_nombre</th>
+<th align="left">residencia_provincia_nombre</th>
+<th align="left">fallecido</th>
+<th align="left">cuidado_intensivo</th>
+<th align="right">edad</th>
+<th align="left">dias_hospitalizacion</th>
+<th align="left">dias_pre_hospitalizacion</th>
+<th align="right">n</th>
+<th align="right">Porcentaje</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Buenos Aires</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">42.0</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">3534</td>
+<td align="right">93</td>
+</tr>
+<tr class="even">
+<td align="left">Buenos Aires</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">57.0</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">272</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">Buenos Aires</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">76.0</td>
+<td align="left">7.0 days</td>
+<td align="left">1.0 days</td>
+<td align="right">263</td>
+<td align="right">61</td>
+</tr>
+<tr class="even">
+<td align="left">Buenos Aires</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">70.0</td>
+<td align="left">8.0 days</td>
+<td align="left">3.0 days</td>
+<td align="right">170</td>
+<td align="right">39</td>
+</tr>
+<tr class="odd">
+<td align="left">CABA</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">39.0</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">4391</td>
+<td align="right">94</td>
+</tr>
+<tr class="even">
+<td align="left">CABA</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">57.0</td>
+<td align="left">NA</td>
+<td align="left">3.0 days</td>
+<td align="right">261</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">CABA</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">83.0</td>
+<td align="left">8.0 days</td>
+<td align="left">2.0 days</td>
+<td align="right">198</td>
+<td align="right">55</td>
+</tr>
+<tr class="even">
+<td align="left">CABA</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">69.0</td>
+<td align="left">10.0 days</td>
+<td align="left">3.0 days</td>
+<td align="right">160</td>
+<td align="right">45</td>
+</tr>
+<tr class="odd">
+<td align="left">Chaco</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">51.0</td>
+<td align="left">NA</td>
+<td align="left">5.0 days</td>
+<td align="right">112</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="left">Chaco</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">59.0</td>
+<td align="left">NA</td>
+<td align="left">5.5 days</td>
+<td align="right">24</td>
+<td align="right">18</td>
+</tr>
+<tr class="odd">
+<td align="left">Chaco</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">68.5</td>
+<td align="left">4.0 days</td>
+<td align="left">5.0 days</td>
+<td align="right">18</td>
+<td align="right">22</td>
+</tr>
+<tr class="even">
+<td align="left">Chaco</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">61.0</td>
+<td align="left">7.0 days</td>
+<td align="left">5.0 days</td>
+<td align="right">65</td>
+<td align="right">78</td>
+</tr>
+<tr class="odd">
+<td align="left">Chubut</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">64.0</td>
+<td align="left">NA</td>
+<td align="left">6.0 days</td>
+<td align="right">2</td>
+<td align="right">67</td>
+</tr>
+<tr class="even">
+<td align="left">Chubut</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">69.0</td>
+<td align="left">NA</td>
+<td align="left">11.0 days</td>
+<td align="right">1</td>
+<td align="right">33</td>
+</tr>
+<tr class="odd">
+<td align="left">Chubut</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">45.0</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="left">Córdoba</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">71.0</td>
+<td align="left">NA</td>
+<td align="left">1.0 days</td>
+<td align="right">76</td>
+<td align="right">79</td>
+</tr>
+<tr class="odd">
+<td align="left">Córdoba</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">64.0</td>
+<td align="left">NA</td>
+<td align="left">2.5 days</td>
+<td align="right">20</td>
+<td align="right">21</td>
+</tr>
+<tr class="even">
+<td align="left">Córdoba</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">80.0</td>
+<td align="left">13.0 days</td>
+<td align="left">2.0 days</td>
+<td align="right">25</td>
+<td align="right">71</td>
+</tr>
+<tr class="odd">
+<td align="left">Córdoba</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">72.5</td>
+<td align="left">18.5 days</td>
+<td align="left">4.5 days</td>
+<td align="right">10</td>
+<td align="right">29</td>
+</tr>
+<tr class="even">
+<td align="left">Corrientes</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">53.5</td>
+<td align="left">NA</td>
+<td align="left">4.0 days</td>
+<td align="right">2</td>
+<td align="right">100</td>
+</tr>
+<tr class="odd">
+<td align="left">Entre Ríos</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">37.0</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">29</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="left">Jujuy</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">41.0</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">100</td>
+</tr>
+<tr class="odd">
+<td align="left">Jujuy</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">52.0</td>
+<td align="left">16.0 days</td>
+<td align="left">6.0 days</td>
+<td align="right">1</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="left">La Pampa</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">71.0</td>
+<td align="left">NA</td>
+<td align="left">5.0 days</td>
+<td align="right">1</td>
+<td align="right">100</td>
+</tr>
+<tr class="odd">
+<td align="left">La Rioja</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">43.5</td>
+<td align="left">NA</td>
+<td align="left">16.0 days</td>
+<td align="right">6</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="left">La Rioja</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">83.0</td>
+<td align="left">2.0 days</td>
+<td align="left">3.0 days</td>
+<td align="right">4</td>
+<td align="right">50</td>
+</tr>
+<tr class="odd">
+<td align="left">La Rioja</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">72.0</td>
+<td align="left">12.0 days</td>
+<td align="left">2.5 days</td>
+<td align="right">4</td>
+<td align="right">50</td>
+</tr>
+<tr class="even">
+<td align="left">Mendoza</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">34.5</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">102</td>
+<td align="right">95</td>
+</tr>
+<tr class="odd">
+<td align="left">Mendoza</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">64.0</td>
+<td align="left">NA</td>
+<td align="left">6.0 days</td>
+<td align="right">5</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Mendoza</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">75.0</td>
+<td align="left">8.0 days</td>
+<td align="left">5.0 days</td>
+<td align="right">3</td>
+<td align="right">33</td>
+</tr>
+<tr class="odd">
+<td align="left">Mendoza</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">74.5</td>
+<td align="left">4.5 days</td>
+<td align="left">4.5 days</td>
+<td align="right">6</td>
+<td align="right">67</td>
+</tr>
+<tr class="even">
+<td align="left">Misiones</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">42.0</td>
+<td align="left">NA</td>
+<td align="left">0.0 days</td>
+<td align="right">24</td>
+<td align="right">89</td>
+</tr>
+<tr class="odd">
+<td align="left">Misiones</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">62.0</td>
+<td align="left">NA</td>
+<td align="left">0.0 days</td>
+<td align="right">3</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="left">Misiones</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">54.5</td>
+<td align="left">4.5 days</td>
+<td align="left">2.0 days</td>
+<td align="right">2</td>
+<td align="right">100</td>
+</tr>
+<tr class="odd">
+<td align="left">Neuquén</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">36.5</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">212</td>
+<td align="right">99</td>
+</tr>
+<tr class="even">
+<td align="left">Neuquén</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">80.0</td>
+<td align="left">NA</td>
+<td align="left">0.0 days</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Neuquén</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">69.0</td>
+<td align="left">4.0 days</td>
+<td align="left">2.5 days</td>
+<td align="right">3</td>
+<td align="right">43</td>
+</tr>
+<tr class="even">
+<td align="left">Neuquén</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">74.0</td>
+<td align="left">5.5 days</td>
+<td align="left">4.0 days</td>
+<td align="right">4</td>
+<td align="right">57</td>
+</tr>
+<tr class="odd">
+<td align="left">Río Negro</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">39.0</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">310</td>
+<td align="right">96</td>
+</tr>
+<tr class="even">
+<td align="left">Río Negro</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">61.0</td>
+<td align="left">NA</td>
+<td align="left">3.0 days</td>
+<td align="right">12</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Río Negro</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">73.5</td>
+<td align="left">8.0 days</td>
+<td align="left">1.0 days</td>
+<td align="right">22</td>
+<td align="right">69</td>
+</tr>
+<tr class="even">
+<td align="left">Río Negro</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">66.5</td>
+<td align="left">6.0 days</td>
+<td align="left">2.0 days</td>
+<td align="right">10</td>
+<td align="right">31</td>
+</tr>
+<tr class="odd">
+<td align="left">Salta</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">33.5</td>
+<td align="left">NA</td>
+<td align="left">2.5 days</td>
+<td align="right">16</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="left">San Juan</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">42.5</td>
+<td align="left">NA</td>
+<td align="left">4.0 days</td>
+<td align="right">4</td>
+<td align="right">80</td>
+</tr>
+<tr class="odd">
+<td align="left">San Juan</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">63.0</td>
+<td align="left">NA</td>
+<td align="left">5.0 days</td>
+<td align="right">1</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">San Luis</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">30.0</td>
+<td align="left">NA</td>
+<td align="left">4.0 days</td>
+<td align="right">7</td>
+<td align="right">88</td>
+</tr>
+<tr class="odd">
+<td align="left">San Luis</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">62.0</td>
+<td align="left">NA</td>
+<td align="left">3.0 days</td>
+<td align="right">1</td>
+<td align="right">12</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Cruz</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">49.0</td>
+<td align="left">NA</td>
+<td align="left">3.5 days</td>
+<td align="right">17</td>
+<td align="right">81</td>
+</tr>
+<tr class="odd">
+<td align="left">Santa Cruz</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">63.0</td>
+<td align="left">NA</td>
+<td align="left">3.0 days</td>
+<td align="right">4</td>
+<td align="right">19</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Fe</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">52.0</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">44</td>
+<td align="right">83</td>
+</tr>
+<tr class="odd">
+<td align="left">Santa Fe</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">69.0</td>
+<td align="left">NA</td>
+<td align="left">4.0 days</td>
+<td align="right">9</td>
+<td align="right">17</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Fe</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">65.5</td>
+<td align="left">18.0 days</td>
+<td align="left">6.0 days</td>
+<td align="right">4</td>
+<td align="right">100</td>
+</tr>
+<tr class="odd">
+<td align="left">Santiago del Estero</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">29.0</td>
+<td align="left">NA</td>
+<td align="left">9.0 days</td>
+<td align="right">1</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="left">SIN ESPECIFICAR</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">36.0</td>
+<td align="left">NA</td>
+<td align="left">3.0 days</td>
+<td align="right">53</td>
+<td align="right">93</td>
+</tr>
+<tr class="odd">
+<td align="left">SIN ESPECIFICAR</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">40.5</td>
+<td align="left">NA</td>
+<td align="left">3.0 days</td>
+<td align="right">4</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">SIN ESPECIFICAR</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">68.0</td>
+<td align="left">6.5 days</td>
+<td align="left">3.0 days</td>
+<td align="right">2</td>
+<td align="right">100</td>
+</tr>
+<tr class="odd">
+<td align="left">Tierra del Fuego</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">49.0</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">5</td>
+<td align="right">71</td>
+</tr>
+<tr class="even">
+<td align="left">Tierra del Fuego</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">62.5</td>
+<td align="left">NA</td>
+<td align="left">10.0 days</td>
+<td align="right">2</td>
+<td align="right">29</td>
+</tr>
+<tr class="odd">
+<td align="left">Tucumán</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">49.5</td>
+<td align="left">NA</td>
+<td align="left">2.0 days</td>
+<td align="right">4</td>
+<td align="right">44</td>
+</tr>
+<tr class="even">
+<td align="left">Tucumán</td>
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">23.0</td>
+<td align="left">NA</td>
+<td align="left">5.0 days</td>
+<td align="right">5</td>
+<td align="right">56</td>
+</tr>
+<tr class="odd">
+<td align="left">Tucumán</td>
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">66.0</td>
+<td align="left">10.0 days</td>
+<td align="left">2.0 days</td>
+<td align="right">1</td>
+<td align="right">25</td>
+</tr>
+<tr class="even">
+<td align="left">Tucumán</td>
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">61.0</td>
+<td align="left">8.0 days</td>
+<td align="left">3.0 days</td>
+<td align="right">3</td>
+<td align="right">75</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Tabla 2: Proporción Hospitalizados con respecto a casos</caption>
+<thead>
+<tr class="header">
+<th align="left">residencia_provincia_nombre</th>
 <th align="right">edad</th>
 <th align="right">n</th>
 <th align="right">Porcentaje</th>
@@ -610,82 +1186,82 @@ div.tocify {
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">Mendoza</td>
-<td align="right">43.0</td>
-<td align="right">117</td>
-<td align="right">100</td>
+<td align="left">CABA</td>
+<td align="right">42.0</td>
+<td align="right">5010</td>
+<td align="right">29</td>
 </tr>
 <tr class="even">
-<td align="left">Neuquén</td>
-<td align="right">37.0</td>
-<td align="right">227</td>
-<td align="right">74</td>
-</tr>
-<tr class="odd">
-<td align="left">Misiones</td>
-<td align="right">50.0</td>
-<td align="right">27</td>
-<td align="right">73</td>
-</tr>
-<tr class="even">
-<td align="left">Salta</td>
-<td align="right">34.0</td>
-<td align="right">21</td>
-<td align="right">72</td>
-</tr>
-<tr class="odd">
-<td align="left">San Juan</td>
-<td align="right">43.0</td>
-<td align="right">5</td>
-<td align="right">71</td>
-</tr>
-<tr class="even">
-<td align="left">San Luis</td>
-<td align="right">30.0</td>
-<td align="right">7</td>
-<td align="right">70</td>
+<td align="left">Buenos Aires</td>
+<td align="right">45.0</td>
+<td align="right">4239</td>
+<td align="right">24</td>
 </tr>
 <tr class="odd">
 <td align="left">Río Negro</td>
 <td align="right">42.0</td>
-<td align="right">342</td>
+<td align="right">354</td>
 <td align="right">54</td>
 </tr>
 <tr class="even">
-<td align="left">Santa Cruz</td>
-<td align="right">51.0</td>
-<td align="right">23</td>
-<td align="right">45</td>
+<td align="left">Neuquén</td>
+<td align="right">37.0</td>
+<td align="right">221</td>
+<td align="right">75</td>
 </tr>
 <tr class="odd">
-<td align="left">CABA</td>
-<td align="right">41.0</td>
-<td align="right">6274</td>
-<td align="right">29</td>
+<td align="left">Chaco</td>
+<td align="right">57.0</td>
+<td align="right">219</td>
+<td align="right">15</td>
 </tr>
 <tr class="even">
 <td align="left">Córdoba</td>
-<td align="right">72.0</td>
+<td align="right">73.0</td>
 <td align="right">131</td>
 <td align="right">25</td>
 </tr>
 <tr class="odd">
-<td align="left">Tucumán</td>
-<td align="right">49.0</td>
-<td align="right">14</td>
-<td align="right">25</td>
+<td align="left">Mendoza</td>
+<td align="right">42.5</td>
+<td align="right">116</td>
+<td align="right">95</td>
+</tr>
+<tr class="even">
+<td align="left">SIN ESPECIFICAR</td>
+<td align="right">36.0</td>
+<td align="right">59</td>
+<td align="right">22</td>
+</tr>
+<tr class="odd">
+<td align="left">Santa Fe</td>
+<td align="right">63.0</td>
+<td align="right">57</td>
+<td align="right">18</td>
 </tr>
 <tr class="even">
 <td align="left">Entre Ríos</td>
-<td align="right">37.5</td>
-<td align="right">26</td>
-<td align="right">23</td>
+<td align="right">37.0</td>
+<td align="right">29</td>
+<td align="right">25</td>
 </tr>
 <tr class="odd">
-<td align="left">Buenos Aires</td>
-<td align="right">48.0</td>
-<td align="right">3049</td>
-<td align="right">22</td>
+<td align="left">Misiones</td>
+<td align="right">47.0</td>
+<td align="right">29</td>
+<td align="right">74</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Cruz</td>
+<td align="right">49.0</td>
+<td align="right">21</td>
+<td align="right">42</td>
+</tr>
+<tr class="odd">
+<td align="left">Salta</td>
+<td align="right">33.5</td>
+<td align="right">16</td>
+<td align="right">80</td>
 </tr>
 <tr class="even">
 <td align="left">La Rioja</td>
@@ -694,40 +1270,16 @@ div.tocify {
 <td align="right">22</td>
 </tr>
 <tr class="odd">
-<td align="left">La Pampa</td>
-<td align="right">71.0</td>
-<td align="right">1</td>
-<td align="right">17</td>
+<td align="left">Tucumán</td>
+<td align="right">49.0</td>
+<td align="right">13</td>
+<td align="right">23</td>
 </tr>
 <tr class="even">
-<td align="left">Santa Fe</td>
-<td align="right">61.5</td>
-<td align="right">50</td>
-<td align="right">17</td>
-</tr>
-<tr class="odd">
-<td align="left">Chaco</td>
-<td align="right">57.5</td>
-<td align="right">216</td>
-<td align="right">14</td>
-</tr>
-<tr class="even">
-<td align="left">Jujuy</td>
-<td align="right">52.0</td>
-<td align="right">1</td>
+<td align="left">San Luis</td>
+<td align="right">37.0</td>
 <td align="right">8</td>
-</tr>
-<tr class="odd">
-<td align="left">Chubut</td>
-<td align="right">64.0</td>
-<td align="right">4</td>
-<td align="right">5</td>
-</tr>
-<tr class="even">
-<td align="left">Santiago del Estero</td>
-<td align="right">29.0</td>
-<td align="right">1</td>
-<td align="right">5</td>
+<td align="right">67</td>
 </tr>
 <tr class="odd">
 <td align="left">Tierra del Fuego</td>
@@ -736,10 +1288,40 @@ div.tocify {
 <td align="right">5</td>
 </tr>
 <tr class="even">
+<td align="left">San Juan</td>
+<td align="right">43.0</td>
+<td align="right">5</td>
+<td align="right">71</td>
+</tr>
+<tr class="odd">
+<td align="left">Chubut</td>
+<td align="right">64.0</td>
+<td align="right">4</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
 <td align="left">Corrientes</td>
-<td align="right">85.0</td>
+<td align="right">53.5</td>
+<td align="right">2</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Jujuy</td>
+<td align="right">46.5</td>
+<td align="right">2</td>
+<td align="right">17</td>
+</tr>
+<tr class="even">
+<td align="left">La Pampa</td>
+<td align="right">71.0</td>
 <td align="right">1</td>
+<td align="right">17</td>
+</tr>
+<tr class="odd">
+<td align="left">Santiago del Estero</td>
+<td align="right">29.0</td>
 <td align="right">1</td>
+<td align="right">5</td>
 </tr>
 </tbody>
 </table>
@@ -747,7 +1329,7 @@ div.tocify {
 <caption>Tabla 2: Letalidad Proporción Fallecidos con respecto a casos</caption>
 <thead>
 <tr class="header">
-<th align="left">carga_provincia_nombre</th>
+<th align="left">residencia_provincia_nombre</th>
 <th align="right">n</th>
 <th align="right">Porcentaje</th>
 </tr>
@@ -755,33 +1337,33 @@ div.tocify {
 <tbody>
 <tr class="odd">
 <td align="left">Buenos Aires</td>
-<td align="right">383</td>
-<td align="right">3</td>
+<td align="right">433</td>
+<td align="right">2</td>
 </tr>
 <tr class="even">
 <td align="left">CABA</td>
-<td align="right">410</td>
+<td align="right">358</td>
 <td align="right">2</td>
 </tr>
 <tr class="odd">
 <td align="left">Chaco</td>
 <td align="right">83</td>
-<td align="right">5</td>
+<td align="right">6</td>
 </tr>
 <tr class="even">
-<td align="left">Chubut</td>
-<td align="right">1</td>
-<td align="right">1</td>
-</tr>
-<tr class="odd">
 <td align="left">Córdoba</td>
 <td align="right">35</td>
 <td align="right">7</td>
 </tr>
+<tr class="odd">
+<td align="left">Río Negro</td>
+<td align="right">32</td>
+<td align="right">5</td>
+</tr>
 <tr class="even">
-<td align="left">Jujuy</td>
-<td align="right">1</td>
-<td align="right">8</td>
+<td align="left">Mendoza</td>
+<td align="right">9</td>
+<td align="right">7</td>
 </tr>
 <tr class="odd">
 <td align="left">La Rioja</td>
@@ -789,9 +1371,19 @@ div.tocify {
 <td align="right">12</td>
 </tr>
 <tr class="even">
-<td align="left">Mendoza</td>
-<td align="right">9</td>
-<td align="right">8</td>
+<td align="left">Neuquén</td>
+<td align="right">7</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Santa Fe</td>
+<td align="right">4</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Tucumán</td>
+<td align="right">4</td>
+<td align="right">7</td>
 </tr>
 <tr class="odd">
 <td align="left">Misiones</td>
@@ -799,24 +1391,186 @@ div.tocify {
 <td align="right">5</td>
 </tr>
 <tr class="even">
-<td align="left">Neuquén</td>
-<td align="right">7</td>
+<td align="left">SIN ESPECIFICAR</td>
 <td align="right">2</td>
-</tr>
-<tr class="odd">
-<td align="left">Río Negro</td>
-<td align="right">31</td>
-<td align="right">5</td>
-</tr>
-<tr class="even">
-<td align="left">Santa Fe</td>
-<td align="right">4</td>
 <td align="right">1</td>
 </tr>
 <tr class="odd">
-<td align="left">Tucumán</td>
-<td align="right">5</td>
-<td align="right">9</td>
+<td align="left">Chubut</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Jujuy</td>
+<td align="right">1</td>
+<td align="right">8</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Tabla 6: TOTAL: Proporcion Fallecidos con respecto a hospitalizados</caption>
+<thead>
+<tr class="header">
+<th align="left">fallecido</th>
+<th align="right">edad</th>
+<th align="left">dias_hospitalizacion</th>
+<th align="left">dias_pre_hospitalizacion</th>
+<th align="right">n</th>
+<th align="right">Porcentaje</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NO</td>
+<td align="right">41</td>
+<td align="left">NA</td>
+<td align="left">2 days</td>
+<td align="right">9579</td>
+<td align="right">90.73</td>
+</tr>
+<tr class="even">
+<td align="left">SI</td>
+<td align="right">74</td>
+<td align="left">8 days</td>
+<td align="left">2 days</td>
+<td align="right">979</td>
+<td align="right">9.27</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Tabla 7: TOTAL: Proporcion Cuidado Intensivo con respecto a hospitalizados</caption>
+<thead>
+<tr class="header">
+<th align="left">cuidado_intensivo</th>
+<th align="right">edad</th>
+<th align="left">dias_hospitalizacion</th>
+<th align="left">dias_pre_hospitalizacion</th>
+<th align="right">n</th>
+<th align="right">Porcentaje</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NO</td>
+<td align="right">42</td>
+<td align="left">8 days</td>
+<td align="left">2 days</td>
+<td align="right">9490</td>
+<td align="right">89.88</td>
+</tr>
+<tr class="even">
+<td align="left">SI</td>
+<td align="right">63</td>
+<td align="left">8 days</td>
+<td align="left">3 days</td>
+<td align="right">1068</td>
+<td align="right">10.12</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Tabla 7: TOTAL: De Hospitalizados cuantos Fallecen y fueron a Cuidado Intensivo, o no</caption>
+<thead>
+<tr class="header">
+<th align="left">fallecido</th>
+<th align="left">cuidado_intensivo</th>
+<th align="right">edad</th>
+<th align="left">dias_hospitalizacion</th>
+<th align="left">dias_pre_hospitalizacion</th>
+<th align="right">n</th>
+<th align="right">Porcentaje</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="right">40</td>
+<td align="left">NA</td>
+<td align="left">2 days</td>
+<td align="right">8952</td>
+<td align="right">93.45</td>
+</tr>
+<tr class="even">
+<td align="left">NO</td>
+<td align="left">SI</td>
+<td align="right">58</td>
+<td align="left">NA</td>
+<td align="left">3 days</td>
+<td align="right">627</td>
+<td align="right">6.55</td>
+</tr>
+<tr class="odd">
+<td align="left">SI</td>
+<td align="left">NO</td>
+<td align="right">78</td>
+<td align="left">8 days</td>
+<td align="left">2 days</td>
+<td align="right">538</td>
+<td align="right">54.95</td>
+</tr>
+<tr class="even">
+<td align="left">SI</td>
+<td align="left">SI</td>
+<td align="right">69</td>
+<td align="left">8 days</td>
+<td align="left">3 days</td>
+<td align="right">441</td>
+<td align="right">45.05</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Tabla 8: TOTAL: De Cuidado intensivo cuantos Fallecen</caption>
+<thead>
+<tr class="header">
+<th align="left">fallecido</th>
+<th align="right">edad</th>
+<th align="left">dias_hospitalizacion</th>
+<th align="left">dias_pre_hospitalizacion</th>
+<th align="right">n</th>
+<th align="right">Porcentaje</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NO</td>
+<td align="right">58</td>
+<td align="left">NA</td>
+<td align="left">3 days</td>
+<td align="right">644</td>
+<td align="right">59.35</td>
+</tr>
+<tr class="even">
+<td align="left">SI</td>
+<td align="right">69</td>
+<td align="left">8 days</td>
+<td align="left">3 days</td>
+<td align="right">441</td>
+<td align="right">40.65</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Tabla 2: Letalidad Proporción Fallecidos con respecto a casos</caption>
+<thead>
+<tr class="header">
+<th align="left">fallecido</th>
+<th align="right">n</th>
+<th align="right">Porcentaje</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NO</td>
+<td align="right">38578</td>
+<td align="right">97.53</td>
+</tr>
+<tr class="even">
+<td align="left">SI</td>
+<td align="right">979</td>
+<td align="right">2.47</td>
 </tr>
 </tbody>
 </table>
