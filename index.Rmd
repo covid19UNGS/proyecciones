@@ -189,7 +189,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 
 ## Proyecciones de incidencia para total de casos Argentina
 
-* Esta estimación de proyecciones requiere la estimación del R0 para las dos fases que definimos (con division en el primer pico después de la cuarentena), basado en [@Nouvellet2018]. Tomamos solamente los casos locales.  
+* Esta estimación de proyecciones requiere la estimación del R0 para las dos fases que definimos (con division en el primer pico después de la cuarentena `r cor_incidence_peak`), basado en [@Nouvellet2018]. Tomamos solamente los casos locales.  
 
 * Utilizamos los datos sobre la incidencia diaria, _el intervalo de serial_ (tiempo entre el inicio de los infectores y los infectados) y el número de reproductivo, que se mantiene constante, para simular trayectorias de epidemia plausibles y proyectar la incidencia futura. Se basa en un proceso de ramificación donde la incidencia diaria sigue un proceso de Poisson determinado por una infecciosidad diaria, calculada como:
 
@@ -575,7 +575,7 @@ ggplot(corI, aes(fecha,Casos,colour=datos)) + geom_line() +   facet_wrap(~reside
   scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + ylab("Casos") + xlab("") + scale_color_viridis_d() +  theme(legend.position="bottom") + ggtitle(paste("Comparación Datos abiertos y Reportes al", max(corI$fecha)))
 
 corI1 <- corI %>%  pivot_wider(names_from = datos, values_from = Casos, values_fn = list(Casos = sum)) %>% arrange(fecha)
-corI1 %>% group_by(residencia_provincia_nombre) %>% summarise(fecha=max(fecha), Abiertos= sum(Abiertos, na.rm = TRUE), Reportes = sum(Reportes, na.rm = TRUE)) 
+knitr::kable( corI1 %>% group_by(residencia_provincia_nombre) %>% summarise(fecha=max(fecha), Abiertos= sum(Abiertos, na.rm = TRUE), Reportes = sum(Reportes, na.rm = TRUE)) )
 
 
 ```
@@ -597,8 +597,8 @@ cor_conf <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% mutate_a
                     dias_pre_hospitalizacion = fecha_internacion - fecha_inicio_sintomas, 
                     hospitalizado= !is.na(fecha_internacion) )
 
-cor_conf %>% filter(residencia_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
-cor_conf %>% filter(carga_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
+#cor_conf %>% filter(residencia_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
+#cor_conf %>% filter(carga_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
 
 cor_FallRec <- cor_conf %>% filter(fallecido=="SI") %>% group_by(residencia_provincia_nombre,hospitalizado) %>%
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),n=n()) %>%
