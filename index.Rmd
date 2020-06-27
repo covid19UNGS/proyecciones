@@ -27,8 +27,6 @@ needed_packages <- c(
 
 lapply(needed_packages, function(x) { if(!require(x,character.only = TRUE)) install.packages(x)} )
 
-require(lubridate)
-require(tidyverse)
 theme_set(theme_bw())
 source("R/functions.r")
 
@@ -47,7 +45,15 @@ cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(
 csv_fname1 <- "Data/Covid19Casos.csv"
 
 url <- "https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.csv"
-download.file(url, destfile = csv_fname1)
+
+if( Sys.which("wget")!="" ) {
+  setwd("Data")
+  system(paste("wget -q -N", url)) 
+  setwd("..")
+} else {
+  download.file(url, destfile = csv_fname1)
+}
+
 
 #x_utf16 <- readBin(csv_fname1, "raw", n = file.size(csv_fname1))
 #
@@ -187,7 +193,7 @@ plot(cor_incidence_obj) %>% add_incidence_fit(cor_incidence_fit) +
 * El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
 
 
-## Proyecciones de incidencia para total de casos Argentina
+## Proyecciones de incidencia para el total de casos Argentina
 
 * Esta estimación de proyecciones requiere la estimación del R0 para las dos fases que definimos (con division en el primer pico después de la cuarentena `r cor_incidence_peak`), basado en [@Nouvellet2018]. Tomamos solamente los casos locales.  
 
@@ -339,23 +345,6 @@ test_pred_decay <- project(cor_incidence_obj[date_range],
 
 plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) %>% add_projections(test_pred_decay, boxplots = FALSE) 
 
-# preds <- data.frame(test_pred_decay) %>% pivot_longer(-dates,values_to = "pred",names_to = "sim") %>% group_by(dates) %>% summarise(pred_mean=mean(pred), pred_99=quantile(pred,.995),pred_1=quantile(pred,.005)  ) %>% rename(fecha=dates) %>% full_join( cor %>% select(fecha,CABA,CABAdia,CABAFallecido,CABAterapia)) %>% arrange(fecha)  %>% mutate(CABAFlag14 = lag(CABAFallecido,14), porcUTI=CABAFlag14/CABAdia)
-# 
-# mporcUTI <-  median(preds$porcUTI[preds$porcUTI>0],na.rm = T)
-# 
-# preds <- preds %>% mutate( CABAdia = ifelse(is.na(CABAdia),pred_mean,CABAdia), entraUTI=rpois(n(),CABAdia*mporcUTI), saleUTI=lag(entraUTI,14),
-#                            entraSale= ifelse(fecha<"2020-05-31",0,entraUTI-saleUTI), 
-#                            permaUTI=ifelse(fecha<"2020-05-31",CABAterapia,152 + cumsum(entraSale)),CABAcum=cumsum(CABAdia)) 
-# col <- viridisLite::viridis(3)
-# 
-# ggplot(preds, aes(x = fecha, y = CABAcum) ) +
-#   geom_line(color = col[1]) +
-#   geom_point( aes(x=fecha,y=permaUTI), size = .5, color= col[2]) + scale_y_log10() +  
-#   geom_hline(yintercept = 1250, size = .5, color= "red",lty=2) +  theme_bw() + ylab("Casos")
-#   annotate("text",x=ymd("20200701"), y=1, label="Fuente @msalnacion\n by @larysar",color="red",size=2) +
-#       labs(title = paste("Incidencia Observada hasta", max(cor$fecha)), 
-#         subtitle ="y modelada para CABA COVID-19 by @larysar") 
-
 
 ```
 
@@ -425,7 +414,7 @@ Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>%
 * El tiempo de duplicación de la segunda parte **`r format(incidence::get_info(cor_incidence_fit, "doubling")[2],digits=1,nsmall=1)` días** (95% CI `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,1],digits=1,nsmall=1)` - `r format(incidence::get_info(cor_incidence_fit, "doubling.conf")[2,2],digits=1,nsmall=1)` días). 
 
 
-## Estimación de $R_t$ y tiempo de duplicación para Prov de Buenos Aires
+## Estimación de $R_t$ y tiempo de duplicación para Prov. de Buenos Aires
 
 * Utilizamos los reportes del Ministerio de Salud. La linea punteada marron vertical es el primer pico de casos local para separar la 1ra fase, de 2da fase. Las lineas rojas es el inicio de la quarentena y las fases del gobierno nacional. 
 
@@ -552,7 +541,7 @@ ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile02
 ```
 
 
-## Comparacion de datos de Incidencia (nro de casos por día) por Provincia 
+## Comparación de datos de Incidencia (nro. de casos por día) por Provincia 
 
 * Inicialmente utilizamos los datos abiertos del Ministerio de Salud. Las lineas rojas son el inicio de la quarentena y las fases del gobierno nacional.
 
@@ -580,8 +569,9 @@ knitr::kable( corI1 %>% group_by(residencia_provincia_nombre) %>% summarise(fech
 
 ```
 
-## Parametros a partir de Datos Abiertos por Provincia
+## Parámetros a partir de Datos Abiertos por Provincia
 
+* Arreglo provicia de residencia SIN ESPECIFICAR asumiendo provincia de carga
 * Fallecidos sin fecha de hospitalización asumo que fueron hospitalizados.
 * Calculo de días de hospitalización solamente para los fallecidos.
 * Dias pre-hospitalización: desde inicio de síntomas hasta hospitalización.
@@ -595,7 +585,8 @@ knitr::kable( corI1 %>% group_by(residencia_provincia_nombre) %>% summarise(fech
 cor_conf <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% mutate_at(vars(starts_with("fecha")),ymd) %>% mutate( 
                     dias_hospitalizacion = fecha_fallecimiento-fecha_internacion,
                     dias_pre_hospitalizacion = fecha_internacion - fecha_inicio_sintomas, 
-                    hospitalizado= !is.na(fecha_internacion) )
+                    hospitalizado= !is.na(fecha_internacion),
+                    residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre))
 
 #cor_conf %>% filter(residencia_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
 #cor_conf %>% filter(carga_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
@@ -681,6 +672,11 @@ knitr::kable(cor_FallRec,caption = "Tabla 10: TOTAL:  De Cuidado intensivo cuant
 corLetalidad <- cor_conf %>% group_by(fallecido) %>% summarise(n=n()) %>%mutate(Porcentaje = round( n / sum(n) * 100,2))
 knitr::kable(corLetalidad,caption = "Tabla 11: Letalidad Proporción Fallecidos con respecto a casos")
 
+cor_FallRec <- cor_conf  %>%  group_by(hospitalizado) %>% 
+  summarise(edad=median(edad, na.rm = TRUE),n=n()) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100)) %>% filter(hospitalizado) %>% arrange(desc(n))
+
+knitr::kable(select(cor_FallRec, - hospitalizado),caption = "Tabla 12: Proporción Hospitalizados con respecto a casos")
 
 ```
  

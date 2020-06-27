@@ -12,11 +12,18 @@ lapply(needed_packages, function(x) { if(!require(x,character.only = TRUE)) inst
 
 # Datos de Casos de Gobierno Nacional 
 #
+
 csv_fname1 <- "Data/Covid19Casos.csv"
 
 url <- "https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.csv"
-download.file(url, destfile = csv_fname1)
 
+if( Sys.which("wget")!="" ) {
+  setwd("Data")
+  system(paste("wget -q -N", url)) 
+  setwd("..")
+} else {
+  download.file(url, destfile = csv_fname1)
+}
 cor <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859-1",skipNul = TRUE)
 names(cor)
 corConf <- cor %>% filter(clasificacion_resumen=="Confirmado") %>% mutate_at(vars(starts_with("fecha")),ymd) %>% mutate( hospitalizado=!is.na(fecha_internacion))

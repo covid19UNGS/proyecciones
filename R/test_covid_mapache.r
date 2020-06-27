@@ -10,9 +10,11 @@ needed_packages <- c(
 lapply(needed_packages, function(x) { if(!require(x,character.only = TRUE)) install.packages(x)} )
 
 
-cor<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA/export?format=csv&id=16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA&gid=0')
+cor1<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA/export?format=csv&id=16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA&gid=0')
 
-unique(cor$osm_admin_level_4)
+unique(cor1$osm_admin_level_4)
+
+corConf <- cor1 %>% filter( osm_admin_level_4 =="Indeterminado") %>% mutate(fecha=dmy(fecha)) %>% select(tot_casosconf,fecha,transmision_tipo) %>% mutate(localesdia=tot_casosconf - lag(tot_casosconf), fecha=ymd(fecha), dias =as.numeric( fecha - min(fecha))) 
 
 corConf <- cor %>% filter( osm_admin_level_4 =="Córdoba") %>% mutate(fecha=dmy(fecha)) %>% select(nue_casosconf_diff,fecha,transmision_tipo)
 
