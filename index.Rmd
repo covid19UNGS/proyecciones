@@ -538,6 +538,22 @@ ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile02
   facet_wrap(~residencia_provincia_nombre) + geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
   geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0,size=3) + ylab("R effectivo (7 Días)") + xlab("") + coord_cartesian(ylim=c(0.1,8))
 
+
+```
+
+## Chaco: Gran resistencia 
+
+* El área de gran resistencia (Departamento San Fernando), tiene un gran nro de afectados y debido al interés calculamos la cantidad de fallecidos por millon.
+
+* Con un población de 390874 (Censo 2010 <http://www.citypopulation.de/php/argentina-chaco_s.php?adm2id=22140>),  
+
+```{r Incid-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+
+corI <- cor_nac %>% mutate(fecha=ymd(fecha_apertura),
+                           residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Chaco"),fecha < ultima_actualizacion,residencia_departamento_nombre=="San Fernando") %>% group_by(fallecido) %>% summarise(fecha=max(fecha),n=n(), porMillon=n/390874*1000000)
+
+knitr::kable(corI,digits = 0)
+
 ```
 
 
@@ -545,7 +561,7 @@ ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile02
 
 * Inicialmente utilizamos los datos abiertos del Ministerio de Salud. Las lineas rojas son el inicio de la quarentena y las fases del gobierno nacional.
 
-* Los datos cargados a partir de los reportes del Ministerio de Salud, tienen diferencias con los "Datos abiertos del Ministerio de Salud" en este último caso utilizamos las fechas de diagnóstico y la provincia de residencia, cuando la provincia de residencia está SIN ESPECIFICAR se toma la provincia de carga. 
+* Los datos cargados a partir de los reportes del Ministerio de Salud, tienen diferencias con los "Datos abiertos del Ministerio de Salud" en este último caso utilizamos las fechas de diagnóstico y la provincia de residencia, cuando lar provincia de residencia está SIN ESPECIFICAR se toma la provincia de carga. 
 
 ```{r Incid-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
