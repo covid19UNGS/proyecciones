@@ -63,7 +63,7 @@ if( Sys.which("wget")!="" ) {
 #
 #rm(x_utf16,x_utf8)
 
-cor_nac <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859-1",skipNul = TRUE)
+cor_nac <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859-1",skipNul = TRUE) %>% mutate(residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre))
 
 ```
 
@@ -361,7 +361,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 * Los datos se actualizan por día a las 17:45, para los calculos de $R_t$ tomo el día anterior debido a que para el ultimo día no se contabilizan todos los casos. 
 
-```{r Rt-log-linearCABA_NAC, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+```{r Rt-log-linearCABA_NAC, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
 
 # Datos de Casos de Gobierno Nacional 
 #
@@ -509,11 +509,11 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 * Utilizamos los datos abiertos del Ministerio de Salud. Las lineas rojas son el inicio de la quarentena y las fases del gobierno nacional. 
 
-```{r Rt-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+```{r Rt-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
 
 
 corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% 
-      mutate(fecha=fecha_diagnostico) %>% filter(residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut")) %>%
+      mutate(fecha=fecha_diagnostico,residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut")) %>%
       group_by(residencia_provincia_nombre ) %>% 
       do( {
           cor_incidence_obj <- select(. , fecha)
@@ -547,7 +547,7 @@ ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile02
 
 * Con un población de 390874 (Censo 2010 <http://www.citypopulation.de/php/argentina-chaco_s.php?adm2id=22140>),  
 
-```{r Incid-provincia-CHACO, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+```{r Incid-provincia-CHACO, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
 
 corI <- cor_nac %>% mutate(fecha=ymd(fecha_apertura),
                            residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Chaco"),fecha < ultima_actualizacion,residencia_departamento_nombre=="San Fernando") %>% group_by(fallecido) %>% summarise(fecha=max(fecha),n=n(), porMillon=n/390874*1000000)
@@ -572,7 +572,7 @@ esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fas
 
 * Los datos cargados a partir de los reportes del Ministerio de Salud, tienen diferencias con los "Datos abiertos del Ministerio de Salud" en este último caso utilizamos las fechas de diagnóstico y la provincia de residencia, cuando lar provincia de residencia está SIN ESPECIFICAR se toma la provincia de carga. 
 
-```{r Incid-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+```{r Incid-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
 
 corI <- cor_nac %>% mutate(fecha=ymd(fecha_apertura),
                            residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut"),fecha < ultima_actualizacion) %>% group_by(residencia_provincia_nombre,fecha) %>% summarise( Casos = n()) %>% mutate(datos="Abiertos")
@@ -601,7 +601,7 @@ knitr::kable( corI1 %>% group_by(residencia_provincia_nombre) %>% summarise(fech
 * Calculo de días de hospitalización solamente para los fallecidos.
 * Dias pre-hospitalización: desde inicio de síntomas hasta hospitalización.
 
-```{r Letal-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
+```{r Letal-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
 #names(cor_nac)
 # 
 # Corrige los casos que se interno en CUI pero no tiene fecha internacion en hospital
