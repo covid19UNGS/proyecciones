@@ -105,13 +105,6 @@ plot(ar_res_parametric_si, "SI")+ theme_bw()
 plot(ar_res_parametric_si, "R")+ theme_bw() + labs(title = "Nro Reproductivo Efectivo Basado en 7 días", 
         subtitle = "COVID-19, Argentina, 2020 by @larysar") + theme_bw() 
 
-# reff_df <- tibble(fecha=ar_res_parametric_si$dates[min(ar_res_parametric_si$R$t_end):length(ar_res_parametric_si$dates)],R=ar_res_parametric_si$R$`Mean(R)`) %>% inner_join(cor) %>% mutate(terapiaDia=terapia - lag(terapia))
-# 
-# ggplot(cor,aes(fecha,terapia,color=log(terapia))) + geom_point() + scale_colour_distiller(palette="YlOrRd", guide = FALSE,direction= 1) + ylab("terapia intensiva") +  labs(title = " Casos COVID-19, Argentina, 2020 by @larysar")
-# 
-# ggplot(reff_df,aes(fecha,terapiaDia,color=log(terapia))) + geom_point() + scale_colour_distiller(palette="YlOrRd", guide = FALSE,direction= 1) + ylab("terapia intensiva variación diaria") +  labs(title = " Casos COVID-19, Argentina, 2020 by @larysar")
-
-
 ```
 
 ## Variación en el intervalo serial 
@@ -619,60 +612,68 @@ cor_conf <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% mutate_a
 
 cor_FallRec <- cor_conf %>% filter(fallecido=="SI") %>% group_by(residencia_provincia_nombre,hospitalizado) %>%
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),n=n()) %>%
-  mutate(Porcentaje = round(n / sum(n) * 100)) %>% filter(!hospitalizado)  %>% arrange(desc(n))
+  mutate(Porcentaje = round(n / sum(n) * 100,2)) %>% filter(!hospitalizado)  %>% arrange(desc(n))
 
-knitr::kable(select(cor_FallRec, - dias_hospitalizacion, - hospitalizado),caption = "Tabla 1: Fallecidos sin fecha de hospitalización")
+knitr::kable(select(cor_FallRec, - dias_hospitalizacion, - hospitalizado),caption = "Tabla 1: Fallecidos sin fecha de hospitalización con respecto a Casos")
 
 
 cor_FallRec <- cor_conf %>% filter(fallecido=="SI") %>% group_by(hospitalizado) %>%
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),n=n()) %>%
   mutate(Porcentaje = round(n / sum(n) * 100,2)) %>% filter(!hospitalizado)  %>% arrange(desc(n))
 
-knitr::kable(select(cor_FallRec, - dias_hospitalizacion, - hospitalizado),caption = "Tabla 2:  TOTAL: Fallecidos sin fecha de hospitalización")
+knitr::kable(select(cor_FallRec, - dias_hospitalizacion, - hospitalizado),caption = "Tabla 2:  TOTAL: Fallecidos sin fecha de hospitalización con respecto a Casos")
 
 
 #
 # Arreglo la hospitalizacion de fallecidos
 #
-cor_conf <- cor_conf %>% mutate(hospitalizado = ifelse(fallecido=="SI",TRUE,hospitalizado))
-
 cor_FallRec <- cor_conf  %>% filter(hospitalizado) %>%
   group_by(residencia_provincia_nombre,fallecido) %>% 
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),
             dias_pre_hospitalizacion=median(dias_pre_hospitalizacion, na.rm = TRUE), n=n()) %>%
-  mutate(Porcentaje = round(n / sum(n) * 100)) %>% filter(fallecido=="SI")  %>% arrange(desc(n))
+  mutate(Porcentaje = round(n / sum(n) * 100,2)) %>% filter(fallecido=="SI")  %>% arrange(desc(n))
 
 knitr::kable(select(cor_FallRec, -fallecido),caption = "Tabla 3: Proporcion Fallecidos con respecto a hospitalizados")
-
-
-cor_FallRec <- cor_conf  %>% filter(hospitalizado) %>%
-  group_by(residencia_provincia_nombre,fallecido,cuidado_intensivo) %>% 
-  summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),
-            dias_pre_hospitalizacion=median(dias_pre_hospitalizacion, na.rm = TRUE), n=n()) %>%
-  mutate(Porcentaje = round(n / sum(n) * 100))  
-
-knitr::kable(select(cor_FallRec,residencia_provincia_nombre,fallecido,cuidado_intensivo,everything()),caption = "Tabla 4: De Hospitalizados cuantos Fallecen y fueron a Cuidado Intensivo, o no")
-
-
-cor_FallRec <- cor_conf  %>%  group_by(residencia_provincia_nombre,hospitalizado) %>% 
-  summarise(edad=median(edad, na.rm = TRUE),n=n()) %>%
-  mutate(Porcentaje = round(n / sum(n) * 100)) %>% filter(hospitalizado) %>% arrange(desc(n))
-
-knitr::kable(select(cor_FallRec, - hospitalizado),caption = "Tabla 5: Proporción Hospitalizados con respecto a casos")
-
-# cor_FallRec <- cor_conf %>% filter(residencia_provincia_nombre == "Mendoza")
-
-corLetalidad <- cor_conf %>% group_by(residencia_provincia_nombre,fallecido) %>% summarise(n=n()) %>%mutate(Porcentaje = round( n / sum(n) * 100)) %>% filter(fallecido=="SI")  %>% arrange(desc(n))
-
-knitr::kable(select(corLetalidad, -fallecido),caption = "Tabla 6: Letalidad Proporción Fallecidos con respecto a casos")
-
 
 cor_FallRec <- cor_conf  %>% filter(hospitalizado) %>%
   group_by(fallecido) %>% 
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),
             dias_pre_hospitalizacion=median(dias_pre_hospitalizacion, na.rm = TRUE), n=n()) %>%
   mutate(Porcentaje = round(n / sum(n) * 100,2)) 
-knitr::kable(cor_FallRec,caption = "Tabla 7: TOTAL: Proporcion Fallecidos con respecto a hospitalizados")
+knitr::kable(cor_FallRec,caption = "Tabla 4: TOTAL: Proporcion Fallecidos con respecto a hospitalizados")
+
+
+# cor_FallRec <- cor_conf  %>% filter(hospitalizado) %>%
+#   group_by(residencia_provincia_nombre,fallecido,cuidado_intensivo) %>% 
+#   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),
+#             dias_pre_hospitalizacion=median(dias_pre_hospitalizacion, na.rm = TRUE), n=n()) %>%
+#   mutate(Porcentaje = round(n / sum(n) * 100))  
+# 
+# knitr::kable(select(cor_FallRec,residencia_provincia_nombre,fallecido,cuidado_intensivo,everything()),caption = "Tabla 4: De Hospitalizados cuantos Fallecen y fueron a Cuidado Intensivo, o no")
+
+
+cor_FallRec <- cor_conf  %>%  group_by(residencia_provincia_nombre,hospitalizado) %>% 
+  summarise(edad=median(edad, na.rm = TRUE),n=n()) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100,2)) %>% filter(hospitalizado) %>% arrange(desc(n))
+
+knitr::kable(select(cor_FallRec, - hospitalizado),caption = "Tabla 5: Proporción Hospitalizados con respecto a casos")
+
+cor_FallRec <- cor_conf  %>%  group_by(hospitalizado) %>% 
+  summarise(edad=median(edad, na.rm = TRUE),n=n()) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100,2)) %>% filter(hospitalizado) %>% arrange(desc(n))
+
+knitr::kable(select(cor_FallRec, - hospitalizado),caption = "Tabla 6: TOTAL Proporción Hospitalizados con respecto a casos")
+
+
+# cor_FallRec <- cor_conf %>% filter(residencia_provincia_nombre == "Mendoza")
+
+corLetalidad <- cor_conf %>% group_by(residencia_provincia_nombre,fallecido) %>% summarise(n=n()) %>%mutate(Porcentaje = round( n / sum(n) * 100,2)) %>% filter(fallecido=="SI")  %>% arrange(desc(n))
+
+knitr::kable(select(corLetalidad, -fallecido),caption = "Tabla 7: Letalidad Proporción Fallecidos con respecto a casos")
+
+corLetalidad <- cor_conf %>% group_by(fallecido) %>% summarise(n=n()) %>%mutate(Porcentaje = round( n / sum(n) * 100,2)) %>% filter(fallecido=="SI")
+knitr::kable(corLetalidad,caption = "Tabla 8: TOTAL Letalidad Proporción Fallecidos con respecto a casos")
+
 
 
 cor_FallRec <- cor_conf  %>% filter(hospitalizado) %>%
@@ -680,30 +681,23 @@ cor_FallRec <- cor_conf  %>% filter(hospitalizado) %>%
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),
             dias_pre_hospitalizacion=median(dias_pre_hospitalizacion, na.rm = TRUE), n=n()) %>%
   mutate(Porcentaje = round(n / sum(n) * 100,2)) 
-knitr::kable(cor_FallRec,caption = "Tabla 8: TOTAL: Proporcion Cuidado Intensivo con respecto a hospitalizados")
+knitr::kable(cor_FallRec,caption = "Tabla 9: TOTAL: Proporcion Cuidado Intensivo con respecto a hospitalizados")
 
 cor_FallRec <- cor_conf  %>% filter(hospitalizado) %>%
   group_by(fallecido,cuidado_intensivo) %>% 
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),
             dias_pre_hospitalizacion=median(dias_pre_hospitalizacion, na.rm = TRUE), n=n()) %>%
   mutate(Porcentaje = round(n / sum(n) * 100,2))  
-knitr::kable(cor_FallRec,caption = "Tabla 9: TOTAL:  De Hospitalizados cuantos Fallecen y fueron a Cuidado Intensivo, o no")
+knitr::kable(cor_FallRec,caption = "Tabla 10: TOTAL:  De Hospitalizados cuantos Fallecen y fueron a Cuidado Intensivo, o no")
 
 cor_FallRec <- cor_conf  %>% filter(cuidado_intensivo=="SI") %>%
   group_by(fallecido) %>% 
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),
             dias_pre_hospitalizacion=median(dias_pre_hospitalizacion, na.rm = TRUE), n=n()) %>%
   mutate(Porcentaje = round(n / sum(n) * 100,2))  
-knitr::kable(cor_FallRec,caption = "Tabla 10: TOTAL:  De Cuidado intensivo cuantos Fallecen")
+knitr::kable(cor_FallRec,caption = "Tabla 11: TOTAL:  De Cuidado intensivo cuantos Fallecen")
 
-corLetalidad <- cor_conf %>% group_by(fallecido) %>% summarise(n=n()) %>%mutate(Porcentaje = round( n / sum(n) * 100,2))
-knitr::kable(corLetalidad,caption = "Tabla 11: Letalidad Proporción Fallecidos con respecto a casos")
 
-cor_FallRec <- cor_conf  %>%  group_by(hospitalizado) %>% 
-  summarise(edad=median(edad, na.rm = TRUE),n=n()) %>%
-  mutate(Porcentaje = round(n / sum(n) * 100)) %>% filter(hospitalizado) %>% arrange(desc(n))
-
-knitr::kable(select(cor_FallRec, - hospitalizado),caption = "Tabla 12: Proporción Hospitalizados con respecto a casos")
 
 ```
  
