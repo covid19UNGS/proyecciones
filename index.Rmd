@@ -268,7 +268,7 @@ cor<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5F
 
 #unique(cor$osm_admin_level_4)
 dfCABA <- cor %>% filter( osm_admin_level_4 =="CABA") 
-esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"))
+esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"))
 
 cor_incidence <- dfCABA  %>% dplyr::select(fecha, nue_casosconf_diff) %>% uncount(nue_casosconf_diff)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
@@ -374,7 +374,7 @@ cor_incidence_obj <- corConf  %>% select(fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(corConf$ultima_actualizacion))-1)
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"))
+esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"))
 
 
 
@@ -421,7 +421,7 @@ Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>%
 ```{r Rt-log-linearPBA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 dfCABA <- cor %>% filter( osm_admin_level_4 =="Buenos Aires", is.na(osm_admin_level_8) | osm_admin_level_8!="Malvinas") 
-esProv <- estima_Re_from_df(dfCABA,"Buenos Aires",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"))
+esProv <- estima_Re_from_df(dfCABA,"Buenos Aires",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"))
 
 ```
 
@@ -520,7 +520,7 @@ corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>%
           cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(.$ultima_actualizacion))-1)
 
-          esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"),plot = FALSE)
+          esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"),plot = FALSE)
           rdf <- esProv[[2]]$R %>% rename(medianR = `Median(R)`,quantile025 = `Quantile.0.025(R)`,quantile975=`Quantile.0.975(R)`)
           fechas <- esProv[[1]]$dates
           rdf <- bind_cols(rdf, fecha = fechas[rdf$t_end]) 
@@ -545,7 +545,7 @@ ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile02
 
 * El área de gran resistencia (Departamento San Fernando), tiene un gran nro de afectados y debido al interés calculamos la cantidad de fallecidos por millon y el $R_t$.
 
-* Con un población de 390874 (Censo 2010 <http://www.citypopulation.de/php/argentina-chaco_s.php?adm2id=22140>),  
+* Con un población de 390874 (Censo 2010 <http://www.citypopulation.de/php/argentina-chaco_s.php?adm2id=22140>)
 
 ```{r Incid-provincia-CHACO, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
 
@@ -561,7 +561,8 @@ cor_incidence_obj <- select(corI , fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(corI$ultima_actualizacion))-1)
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO"),plot = TRUE)
+esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"),plot = TRUE)
+
 
 ```
 
@@ -621,6 +622,7 @@ cor_FallRec <- cor_conf %>% filter(fallecido=="SI") %>% group_by(residencia_prov
   mutate(Porcentaje = round(n / sum(n) * 100)) %>% filter(!hospitalizado)  %>% arrange(desc(n))
 
 knitr::kable(select(cor_FallRec, - dias_hospitalizacion, - hospitalizado),caption = "Tabla 1: Fallecidos sin fecha de hospitalización")
+
 
 cor_FallRec <- cor_conf %>% filter(fallecido=="SI") %>% group_by(hospitalizado) %>%
   summarise(edad=median(edad, na.rm = TRUE),dias_hospitalizacion=median(dias_hospitalizacion, na.rm = TRUE),n=n()) %>%
