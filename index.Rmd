@@ -506,7 +506,7 @@ plot(cor_incidence_obj) %>% add_projections(test_pred_growth, boxplots = FALSE) 
 
 
 corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% 
-      mutate(fecha=fecha_diagnostico,residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut")) %>%
+      mutate(fecha=fecha_diagnostico,residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut","Jujuy")) %>%
       group_by(residencia_provincia_nombre ) %>% 
       do( {
           cor_incidence_obj <- select(. , fecha)
@@ -522,9 +522,9 @@ corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>%
 saveRDS(corR,"Data/corR.rds")
 #corR <- readRDS("Data/corR.rds")
 
-nombre_fases <- c("Cuarentena","Fase 2","Fase 3","Fase 4","ASPO/DISPO")
-fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08")),
-                  nombre=nombre_fases)
+nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO/DISPO","Nuevo ASPO")
+fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08"),ymd("2020-07-01")),nombre=nombre_fases)
+
 ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile025,ymax=quantile975),alpha=0.2) +
   scale_y_continuous(trans="log2") + geom_hline(yintercept = 1, linetype=3) + 
   scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + 
