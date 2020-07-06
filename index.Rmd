@@ -569,14 +569,15 @@ esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fas
 ```{r Incid-provincia, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
 
 corI <- cor_nac %>% mutate(fecha=ymd(fecha_apertura),
-                           residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut"),fecha < ultima_actualizacion) %>% group_by(residencia_provincia_nombre,fecha) %>% summarise( Casos = n()) %>% mutate(datos="Abiertos")
+                           residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut","Jujuy"),fecha < ultima_actualizacion) %>% group_by(residencia_provincia_nombre,fecha) %>% summarise( Casos = n()) %>% mutate(datos="Abiertos")
 
-ggplot(corI, aes(fecha,Casos)) + geom_bar(stat="identity") +  
-  scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + 
-  facet_wrap(~residencia_provincia_nombre, scales="free_y") + geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
-  geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0,size=3) + ylab("Casos") + xlab("") 
+# ggplot(corI, aes(fecha,Casos)) + geom_bar(stat="identity") +  
+#   scale_x_date(date_breaks = "1 week",date_labels =  "%b-%d") + theme(axis.text.x=element_text(angle=60, hjust=1)) + 
+#   facet_wrap(~residencia_provincia_nombre, scales="free_y") + geom_vline(data= fases, aes(xintercept = fecha), col = "red", lty = 3)  +
+#   geom_text(data = fases, mapping = aes(label = nombre, x=fecha,y = 0), angle = 60, hjust = 0,size=3) + ylab("Casos") + xlab("") 
+# 
 
-corI1 <- cor %>% mutate(fecha=ymd(fecha)) %>% filter(osm_admin_level_4 %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut"),fecha <= max(corI$fecha)) %>% select(osm_admin_level_4,fecha,nue_casosconf_diff) %>% rename(Casos=nue_casosconf_diff,residencia_provincia_nombre=osm_admin_level_4) %>% mutate(datos="Reportes")
+corI1 <- cor %>% mutate(fecha=ymd(fecha)) %>% filter(osm_admin_level_4 %in% c("Chaco","CABA","Buenos Aires","Neuquén", "Río Negro","Chubut","Jujuy"),fecha <= max(corI$fecha)) %>% select(osm_admin_level_4,fecha,nue_casosconf_diff) %>% rename(Casos=nue_casosconf_diff,residencia_provincia_nombre=osm_admin_level_4) %>% mutate(datos="Reportes")
 corI <- bind_rows(corI,corI1)
 
 ggplot(corI, aes(fecha,Casos,colour=datos)) + geom_line() +   facet_wrap(~residencia_provincia_nombre, scales="free_y") + 
