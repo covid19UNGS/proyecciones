@@ -11,7 +11,7 @@
 #'
 #' @examples
 estima_Re_from_df <- function(df,region,pair_data=NULL,end_date=NULL,
-                              nombre_fases=c("Cuarentena","Fase 2","Fase 3","Fase 4","ASPO/DISPO","Nuevo ASPO/DISPO"),
+                              fases,
                               plot=TRUE){ 
   require(EpiEstim)
   require(lubridate)

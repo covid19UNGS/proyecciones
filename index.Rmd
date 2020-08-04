@@ -65,6 +65,9 @@ if( Sys.which("wget")!="" ) {
 
 cor_nac <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859-1",skipNul = TRUE) %>% mutate(residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre))
 
+nombre_fases <- c("Cuarentena","Fase 2","Fase 3","Fase 4","ASPO/DISPO","Nuevo ASPO","Reapertura Prog.")
+fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08"),ymd("2020-07-01"),ymd("2020-07-20")),nombre=nombre_fases)
+
 ```
 
 
@@ -261,7 +264,7 @@ cor<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5F
 
 #unique(cor$osm_admin_level_4)
 dfCABA <- cor %>% filter( osm_admin_level_4 =="CABA") 
-esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"))
+esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),fases)
 
 cor_incidence <- dfCABA  %>% dplyr::select(fecha, nue_casosconf_diff) %>% uncount(nue_casosconf_diff)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
@@ -367,7 +370,7 @@ cor_incidence_obj <- corConf  %>% select(fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(corConf$ultima_actualizacion))-1)
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"))
+esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",fases)
 
 
 
@@ -414,7 +417,7 @@ Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>%
 ```{r Rt-log-linearPBA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 dfCABA <- cor %>% filter( osm_admin_level_4 =="Buenos Aires", is.na(osm_admin_level_8) | osm_admin_level_8!="Malvinas") 
-esProv <- estima_Re_from_df(dfCABA,"Buenos Aires",end_date = max(cor$fecha),nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"))
+esProv <- estima_Re_from_df(dfCABA,"Buenos Aires",end_date = max(cor$fecha),fases)
 
 ```
 
@@ -513,7 +516,7 @@ corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>%
           cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(.$ultima_actualizacion))-1)
 
-          esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"),plot = FALSE)
+          esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases,plot = FALSE)
           rdf <- esProv[[2]]$R %>% rename(medianR = `Median(R)`,quantile025 = `Quantile.0.025(R)`,quantile975=`Quantile.0.975(R)`)
           fechas <- esProv[[1]]$dates
           rdf <- bind_cols(rdf, fecha = fechas[rdf$t_end]) 
@@ -521,9 +524,6 @@ corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>%
 
 saveRDS(corR,"Data/corR.rds")
 #corR <- readRDS("Data/corR.rds")
-
-nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO/DISPO","Nuevo ASPO")
-fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08"),ymd("2020-07-01")),nombre=nombre_fases)
 
 ggplot(corR, aes(fecha,medianR)) + geom_line() + geom_ribbon(aes(ymin=quantile025,ymax=quantile975),alpha=0.2) +
   scale_y_continuous(trans="log2") + geom_hline(yintercept = 1, linetype=3) + 
@@ -554,7 +554,7 @@ cor_incidence_obj <- select(corI , fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(corI$ultima_actualizacion))-1)
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",nombre_fases = c("Cuarentena","Fase 2","Fase 3","Fase 3","ASPO","Nuevo ASPO"),plot = TRUE)
+esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases,plot = TRUE)
 
 
 ```
@@ -609,6 +609,7 @@ cor_conf <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>% mutate_a
                     hospitalizado= !is.na(fecha_internacion),
                     residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre))
 
+
 #cor_conf %>% filter(residencia_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
 #cor_conf %>% filter(carga_provincia_nombre == "Tierra del Fuego", cuidado_intensivo=="SI")
 cor_FallRec <- cor_conf %>%  group_by(residencia_provincia_nombre,hospitalizado,fallecido) %>% filter(!hospitalizado,fallecido=="SI")
@@ -627,6 +628,23 @@ cor_FallRec <- cor_conf %>%  mutate(dias_fallecimiento= fecha_fallecimiento - fe
 
 knitr::kable(select(cor_FallRec, - hospitalizado),caption = "Tabla 2:  TOTAL: Fallecidos sin fecha de hospitalización con respecto a Casos, nro de días con respecto a inicio de síntomas")
 
+#
+# Fallecidos hospitalizados por categoria de edad
+#
+cor_FallRec <- cor_conf %>%  mutate(dias_fallecimiento= fecha_fallecimiento - fecha_inicio_sintomas, rango_edad=as.character(cut(edad,breaks=c(-Inf,15,65,Inf),labels=c("Niño 15<","Adulto 65<","Mayor")))) %>% filter(!is.na(rango_edad))  %>% group_by(rango_edad,hospitalizado,fallecido ) %>% summarise(edad=median(edad, na.rm = TRUE),dias_fallecimiento=median(dias_fallecimiento, na.rm = TRUE),n=n()) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100,2)) %>% filter(fallecido=="SI")   
+ggplot(cor_FallRec, aes(x=fct_relevel(rango_edad, "Mayor"), y=Porcentaje, fill=hospitalizado)) + geom_bar(stat="identity") + facet_wrap(~hospitalizado) + scale_fill_brewer( palette = "Paired")
+knitr::kable(select(cor_FallRec, - fallecido),caption = "Tabla 2A:  Fallecidos hospitalizados o no por categoria de edad") 
+#    geom_histogram(binwidth=10, colour="black", fill="white") + ylab("Nro de Fallecimientos")
+
+
+#
+# Fallecidos totales por categoria de edad
+#
+cor_FallRec <- cor_conf %>%  mutate(dias_fallecimiento= fecha_fallecimiento - fecha_inicio_sintomas, rango_edad=as.character(cut(edad,breaks=c(-Inf,15,65,Inf),labels=c("Niño 15<","Adulto 65<","Mayor >65")))) %>% filter(!is.na(rango_edad))  %>% group_by(rango_edad,fallecido ) %>% summarise(edad=median(edad, na.rm = TRUE),dias_fallecimiento=median(dias_fallecimiento, na.rm = TRUE),n=n()) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100,3)) %>% filter(fallecido=="SI")   
+ggplot(cor_FallRec, aes(x=fct_relevel(rango_edad, "Mayor >65"), y=Porcentaje, fill=rango_edad)) + geom_bar(stat="identity") +   scale_fill_brewer( palette = "Paired") + guides(fill=FALSE) + xlab("")
+knitr::kable(select(cor_FallRec, - fallecido),caption = "Tabla 2B:  Fallecidos totales por categoria de edad") 
 
 #
 # Arreglo la hospitalizacion de fallecidos
