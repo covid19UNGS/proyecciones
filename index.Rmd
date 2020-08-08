@@ -426,7 +426,7 @@ Número total de casos al `r max(cor_nac$ultima_actualizacion)` = `r corConf %>%
 ```{r Rt-log-linearPBA, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname)}
 
 dfCABA <- cor %>% filter( osm_admin_level_4 =="Buenos Aires", is.na(osm_admin_level_8) | osm_admin_level_8!="Malvinas") 
-esProv <- estima_Re_from_df(dfCABA,"Buenos Aires",end_date = max(cor$fecha),fases)
+esProv <- estima_Re_from_df(dfCABA,"Buenos Aires",end_date = max(cor$fecha),fases=fases)
 
 ```
 
@@ -525,7 +525,7 @@ corR <- cor_nac %>% filter(clasificacion_resumen=="Confirmado") %>%
           cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(.$ultima_actualizacion))-1)
 
-          esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases,plot = FALSE)
+          esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases=fases,plot = FALSE)
           rdf <- esProv[[2]]$R %>% rename(medianR = `Median(R)`,quantile025 = `Quantile.0.025(R)`,quantile975=`Quantile.0.975(R)`)
           fechas <- esProv[[1]]$dates
           rdf <- bind_cols(rdf, fecha = fechas[rdf$t_end]) 
@@ -563,7 +563,7 @@ cor_incidence_obj <- select(corI , fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(corI$ultima_actualizacion))-1)
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases,plot = TRUE)
+esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases=fases,plot = TRUE)
 
 
 ```
@@ -586,7 +586,7 @@ cor_incidence_obj <- select(corI , fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(corI$ultima_actualizacion))-1)
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases,plot = TRUE)
+esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases=fases,plot = TRUE)
 
 
 ```
