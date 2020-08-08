@@ -101,7 +101,7 @@ Método de estimación aplicado [@Cori2013; @Thompson2019] permite la inclusión
 
 require(EpiEstim)
 
-incid <- cor %>% dplyr::select(localesdia,importadosdia,fecha) %>% rename(local=localesdia,imported=importadosdia,dates=fecha)
+#incid <- cor %>% dplyr::select(localesdia,importadosdia,fecha) %>% rename(local=localesdia,imported=importadosdia,dates=fecha)
 ar_res_parametric_si <- estimate_R(cor_incidence_obj, 
                                    method = "uncertain_si", 
                                    config = make_config(list(mean_si = 7.5, std_mean_si = 2, 
