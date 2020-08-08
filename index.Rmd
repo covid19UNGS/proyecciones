@@ -68,6 +68,17 @@ cor_nac <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859
 nombre_fases <- c("Cuarentena","Fase 2","Fase 3","Fase 4","ASPO/DISPO","Nuevo ASPO","Reapertura Prog.")
 fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08"),ymd("2020-07-01"),ymd("2020-07-20")),nombre=nombre_fases)
 
+cor<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA/export?format=csv&id=16-bnsDdmmgtSxdWbVMboIHo5FRuz76DBxsz_BbsEVWA&gid=0') %>% mutate(fecha=dmy(fecha))
+
+#unique(cor$osm_admin_level_4)
+dfArg <- cor %>% filter( osm_admin_level_4 =="Indeterminado") 
+cor_incidence <- dfArg  %>% mutate(casos_dia=tot_casosconf - lag(tot_casosconf)) %>% dplyr::select(fecha, casos_dia)
+cor_incidence$casos_dia[1] <- 1
+cor_incidence <- cor_incidence %>% uncount(casos_dia)
+cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
+
+
+
 ```
 
 
@@ -91,7 +102,7 @@ Método de estimación aplicado [@Cori2013; @Thompson2019] permite la inclusión
 require(EpiEstim)
 
 incid <- cor %>% dplyr::select(localesdia,importadosdia,fecha) %>% rename(local=localesdia,imported=importadosdia,dates=fecha)
-ar_res_parametric_si <- estimate_R(incid, 
+ar_res_parametric_si <- estimate_R(cor_incidence_obj, 
                                    method = "uncertain_si", 
                                    config = make_config(list(mean_si = 7.5, std_mean_si = 2, 
                                                              min_mean_si = 1, max_mean_si = 8.4, 
@@ -162,8 +173,8 @@ require(projections)
 cor_incidence_peak <- as.Date("2020-03-30")   # Estimo que alli termina la fase exponencial inicial  
 
 
-cor_incidence <- cor  %>% dplyr::select(fecha, localesdia) %>% uncount(localesdia)
-cor_incidence_obj <- incidence::incidence(cor_incidence$fecha)
+#cor_incidence <- cor  %>% dplyr::select(fecha, localesdia) %>% uncount(localesdia)
+#cor_incidence_obj <- incidence::incidence(cor_incidence$fecha)
 
 #cor_incidence_peak <- find_peak(cor_incidence_obj)
 
@@ -589,10 +600,10 @@ knitr::kable( corI1 %>% group_by(residencia_provincia_nombre) %>% summarise(fech
 
 ```
 
-## Parámetros a partir de Datos Abiertos por Provincia
+## Análisis a partir de Datos Abiertos por Provincia y totales
 
 * Arreglo provicia de residencia SIN ESPECIFICAR asumiendo provincia de carga
-* Fallecidos sin fecha de hospitalización asumo que fueron hospitalizados.
+* Fallecidos sin fecha de hospitalización asumo que fueron NO fueron hospitalizados.
 * Calculo de días de hospitalización solamente para los fallecidos.
 * Dias pre-hospitalización: desde inicio de síntomas hasta hospitalización.
 
