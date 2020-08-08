@@ -273,7 +273,7 @@ cor<-read_csv('https://docs.google.com/spreadsheets/d/16-bnsDdmmgtSxdWbVMboIHo5F
 
 #unique(cor$osm_admin_level_4)
 dfCABA <- cor %>% filter( osm_admin_level_4 =="CABA") 
-esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),fases)
+esProv <- estima_Re_from_df(dfCABA,"CABA",end_date = max(cor$fecha),fases=fases)
 
 cor_incidence <- dfCABA  %>% dplyr::select(fecha, nue_casosconf_diff) %>% uncount(nue_casosconf_diff)
 cor_incidence_obj <- incidence::incidence(cor_incidence$fecha, last_date=max(cor$fecha))
