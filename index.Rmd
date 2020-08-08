@@ -379,7 +379,7 @@ cor_incidence_obj <- corConf  %>% select(fecha)
 cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
                                           last_date=ymd(max(corConf$ultima_actualizacion))-1)
 
-esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",fases)
+esProv <- estima_Re_from_df(cor_incidence_obj,"CABA Datos Abiertos MinSal",fases=fases)
 
 
 
