@@ -34,11 +34,11 @@ source("R/functions.r")
 csv_fname <- "Data/coronavirus_ar.csv"
 
 
-cor <- read_csv(csv_fname) %>% dplyr::select(fecha:TDFdia)
-cor <- cor  %>% mutate(fecha=ymd(fecha), dias =as.numeric( fecha - min(fecha))) 
-cor <- cor %>% mutate(importadosdia=importados-lag(importados))
-cor$importadosdia[1] <- 1
-cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(CABAdia),0,CABAdia))
+# cor <- read_csv(csv_fname) %>% dplyr::select(fecha:TDFdia)
+# cor <- cor  %>% mutate(fecha=ymd(fecha), dias =as.numeric( fecha - min(fecha))) 
+# cor <- cor %>% mutate(importadosdia=importados-lag(importados))
+# cor$importadosdia[1] <- 1
+# cor <- cor %>% mutate(localesdia=casosdia - importadosdia, CABAdia=ifelse(is.na(CABAdia),0,CABAdia))
 
 # Datos de Casos de Gobierno Nacional 
 #
@@ -55,15 +55,13 @@ if( Sys.which("wget")!="" ) {
 }
 
 
-#x_utf16 <- readBin(csv_fname1, "raw", n = file.size(csv_fname1))
-#
-#x_utf8 <- iconv(list(x_utf16), from = "UTF-16LE", to = "UTF-8", toRaw = TRUE)[[1]]
-#
-#cor_nac <- read_csv(x_utf8)
-#
-#rm(x_utf16,x_utf8)
+x_utf16 <- readBin(csv_fname1, "raw", n = file.size(csv_fname1))
 
-cor_nac <- read.csv(csv_fname1,stringsAsFactors = FALSE,fileEncoding = "ISO-8859-1",skipNul = TRUE) %>% mutate(residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre))
+x_utf8 <- iconv(list(x_utf16), from = "UTF-16LE", to = "UTF-8", toRaw = TRUE)[[1]]
+
+cor_nac <- read_csv(x_utf8) %>% mutate(residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre))
+
+rm(x_utf16,x_utf8)
 
 nombre_fases <- c("Cuarentena","Fase 2","Fase 3","Fase 4","ASPO/DISPO","Nuevo ASPO","Reapertura Prog.")
 fases <- tibble(fecha=c(ymd("2020-03-20"),ymd("2020-04-13"),ymd("2020-04-25"),ymd("2020-05-10"),ymd("2020-06-08"),ymd("2020-07-01"),ymd("2020-07-20")),nombre=nombre_fases)
@@ -570,6 +568,28 @@ esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases,plot
 
 ```
 
+
+## Tierra del Fuego: Rio Grande  
+
+* La ciudad de Río grande en tierra del Fuego con un poblacion de 88,700
+
+```{r Incid-provincia-TDF_RioGrande, echo=FALSE, tidy=TRUE, message=FALSE, warning=FALSE,cache.extra = tools::md5sum(csv_fname1)}
+
+corI <- cor_nac %>% mutate(fecha=ymd(fecha_apertura),
+                           residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Tierra del Fuego"),fecha < ultima_actualizacion,residencia_departamento_nombre=="Río Grande") %>% group_by(fallecido) %>% summarise(fecha=max(fecha),n=n(), porMillon=n/88700*1000000)
+
+knitr::kable(corI,digits = 0)
+
+corI <- cor_nac %>% mutate(fecha=ymd(fecha_apertura),
+                           residencia_provincia_nombre=ifelse(residencia_provincia_nombre=="SIN ESPECIFICAR",carga_provincia_nombre,residencia_provincia_nombre)) %>% filter(clasificacion_resumen=="Confirmado", residencia_provincia_nombre %in% c("Tierra del Fuego"),fecha < ultima_actualizacion,residencia_departamento_nombre=="Río Grande")
+cor_incidence_obj <- select(corI , fecha)
+cor_incidence_obj <- incidence::incidence(cor_incidence_obj$fecha,
+                                          last_date=ymd(max(corI$ultima_actualizacion))-1)
+
+esProv <- estima_Re_from_df(cor_incidence_obj,"Datos Abiertos MinSal",fases,plot = TRUE)
+
+
+```
 
 ## Comparación de datos de Incidencia (nro. de casos por día) por Provincia 
 
