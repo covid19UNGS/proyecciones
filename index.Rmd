@@ -136,7 +136,7 @@ dist <- "G"  # fitting a Gamma distribution for the SI
 empirical_si_config <- make_config(list(si_parametric_distr = dist, 
     mcmc_control = mcmc_control, seed = overall_seed, n1 = 50, 
     n2 = 50))
-ar_res_empirical_si <- estimate_R(incid, method = "si_from_data", 
+ar_res_empirical_si <- estimate_R(cor_incidence_obj, method = "si_from_data", 
     si_data = pair, config = empirical_si_config)
 
 plot(ar_res_empirical_si, "SI")+ theme_bw()
